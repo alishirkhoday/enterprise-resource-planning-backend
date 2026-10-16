@@ -1,0 +1,87 @@
+name: erp
+
+services:
+  postgres:
+    image: postgres:17.10
+    container_name: erp-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.8.0
+    container_name: erp-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mongo:
+    image: mongo:8.3.11
+    container_name: erp-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: erp-api:local
+    container_name: erp-api
+    restart: unless-stopped
+    ports:
+      - "${API_HTTP_PORT}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__MainDatabase: Server=${SQLSERVER_HOST};Database=${SQLSERVER_DB};User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD};TrustServerCertificate=True;Encrypt=False;
+      ConnectionStrings__CacheDatabase: redis:6379
+      ConnectionStrings__LogDatabase: mongodb://mongo:27017/
+      Serilog__WriteTo__0__Args__Settings__Host: mongo
+      Serilog__WriteTo__0__Args__Settings__Port: "27017"
+      Serilog__WriteTo__0__Args__Settings__User: ""
+      Serilog__WriteTo__0__Args__Settings__Password: ""
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__Key: ${JWT_KEY}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongo_data:
+  mongo_config:
