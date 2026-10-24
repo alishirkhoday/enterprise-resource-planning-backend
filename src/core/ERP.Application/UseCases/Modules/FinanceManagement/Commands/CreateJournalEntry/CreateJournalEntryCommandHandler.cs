@@ -56,11 +56,6 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.CreateJour
             if (lines.IsFailure)
                 return Result.Failure<JournalEntryDto, Error>(lines.Error);
 
-            foreach (var line in lines.Value)
-            {
-                document.AddItem(line);
-            }
-
             var series = await numberingSeries.GetForUpdateAsync(
                 JournalNumberingKey,
                 request.BranchId,
@@ -100,6 +95,8 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.CreateJour
                     return Result.Failure<List<DocumentItem>, Error>(Errors.Finance.AccountDoesNotAcceptPostings(account.Code));
 
                 var item = new DocumentItem(document, account, priority++, line.Debtor, line.Creditor);
+                document.AddItem(item);
+                built.Add(item);
 
                 var subsidiaries = await ResolveDetailAccountsAsync(line, cancellationToken);
                 if (subsidiaries.IsFailure)
@@ -109,7 +106,7 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.CreateJour
                 {
                     // The account declares which subsidiary groups its lines carry, and the domain
                     // is what knows whether these satisfy that.
-                    item.SetDetailAccounts(subsidiaries.Value.Level1, subsidiaries.Value.Level2, subsidiaries.Value.Level3);
+                    document.SetDocumentItemDetailAccounts(item.Id, subsidiaries.Value.Level1, subsidiaries.Value.Level2, subsidiaries.Value.Level3);
                 }
                 catch (InvalidOperationException exception)
                 {
@@ -117,13 +114,12 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.CreateJour
                 }
 
                 if (line.CostCenterId is not null)
-                    item.AssignCostCenter(line.CostCenterId.Value);
+                    document.AssignDocumentItemCostCenter(item.Id, line.CostCenterId.Value);
 
                 if (line.ProjectId is not null)
-                    item.AssignProject(line.ProjectId.Value);
+                    document.AssignDocumentItemProject(item.Id, line.ProjectId.Value);
 
-                item.SetDescription(line.Description);
-                built.Add(item);
+                document.SetDocumentItemDescription(item.Id, line.Description);
             }
 
             return Result.Success<List<DocumentItem>, Error>(built);

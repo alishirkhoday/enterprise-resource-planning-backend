@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// Compares the bank statement against the ledger for one period and records what explains the gap.
 /// It may only be completed once the unexplained difference is zero.
 /// </summary>
-public sealed class BankReconciliation : BaseEntity
+public sealed partial class BankReconciliation : AggregateRoot
 {
     public BankBranchAccount BankBranchAccount { get; private set; } = default!;
     public Guid BankBranchAccountId { get; private set; }
@@ -24,7 +24,7 @@ public sealed class BankReconciliation : BaseEntity
     public string? Notes { get; private set; }
 
     private readonly List<BankReconciliationItem> _items = [];
-    public IReadOnlyList<BankReconciliationItem> Items => _items;
+    public IReadOnlyList<BankReconciliationItem> Items => _items.AsReadOnly();
 
     private BankReconciliation() { }
 
@@ -48,13 +48,19 @@ public sealed class BankReconciliation : BaseEntity
 
     public void AddItem(BankReconciliationItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.ReconciliationId, _items);
+
         EnsureInProgress();
         _items.Add(item);
     }
 
     public void RemoveItem(BankReconciliationItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.ReconciliationId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureInProgress();
         _items.Remove(item);

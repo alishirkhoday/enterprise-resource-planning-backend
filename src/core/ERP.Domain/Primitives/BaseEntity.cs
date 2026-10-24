@@ -1,16 +1,7 @@
 namespace ERP.Domain.Primitives;
 
-/// <summary>
-/// The single base class for every entity in this solution. It carries identity, the domain events
-/// raised since the entity was loaded, the audit trail and the soft-delete flags.
-/// <para>
-/// Every entity here is treated as an aggregate root. Child rows such as an order line are reached
-/// through the root that owns them - that is a rule about how repositories are written, not about
-/// which base class the child uses. If the distinction ever needs to be enforced by the compiler,
-/// the seam is the <see cref="IAggregateRoot{TKey}"/> constraint on the repository contract.
-/// </para>
-/// </summary>
-public abstract class BaseEntity : IAggregateRoot<Guid>, IAuditable, ISoftDeletable
+/// <summary>Identity, audit information and event recording shared by roots and their children.</summary>
+public abstract class BaseEntity : IAuditable, ISoftDeletable
 {
     public Guid Id { get; protected set; }
 
@@ -20,7 +11,7 @@ public abstract class BaseEntity : IAggregateRoot<Guid>, IAuditable, ISoftDeleta
     /// Facts this entity has recorded but nobody has acted on yet. Infrastructure is expected to
     /// dispatch and then clear them as part of saving, and never to persist the list itself.
     /// </summary>
-    public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents;
+    public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     /// <summary>
     /// The creation time in UTC. Persist this value if you need auditability.
@@ -83,7 +74,7 @@ public abstract class BaseEntity : IAggregateRoot<Guid>, IAuditable, ISoftDeleta
     /// <summary>
     /// Marks the entity as deleted without removing the row, so history and references stay intact.
     /// </summary>
-    public void Delete(string? deletedBy = null)
+    internal void Delete(string? deletedBy = null)
     {
         if (IsDeleted)
             return;
@@ -93,7 +84,7 @@ public abstract class BaseEntity : IAggregateRoot<Guid>, IAuditable, ISoftDeleta
         ConcurrencyStamp = Guid.NewGuid().ToString("N");
     }
 
-    public void Restore()
+    internal void Restore()
     {
         if (!IsDeleted)
             return;
@@ -102,6 +93,20 @@ public abstract class BaseEntity : IAggregateRoot<Guid>, IAuditable, ISoftDeleta
         DeletionDateTime = null;
         ConcurrencyStamp = Guid.NewGuid().ToString("N");
     }
+
+    protected void EnsureCanAddChild<T>(T child, Guid ownerId, IReadOnlyCollection<T> children)
+        where T : BaseEntity
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        if (ownerId != Id)
+            throw new InvalidOperationException("The child belongs to a different owner.");
+        if (children.Any(existing => existing.Id == child.Id))
+            throw new InvalidOperationException("The child is already attached to this owner.");
+    }
+
+    protected T GetChild<T>(Guid childId, IEnumerable<T> children) where T : BaseEntity =>
+        children.SingleOrDefault(child => child.Id == childId)
+        ?? throw new InvalidOperationException("The child is not attached to this owner.");
 
     public static bool operator ==(BaseEntity? firstEntity, BaseEntity? secondEntity)
     {

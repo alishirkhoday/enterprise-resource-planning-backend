@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.CustomersRelationshipManagement;
 /// A party the organization sells to. Everything sales and receivables need about them lives here:
 /// how to reach them, what they may owe, and on what terms they buy.
 /// </summary>
-public sealed class Customer : BaseEntity, IBranchScoped
+public sealed partial class Customer : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -45,19 +45,19 @@ public sealed class Customer : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<CustomerAddress> _addresses = [];
-    public IReadOnlyList<CustomerAddress> Addresses => _addresses;
+    public IReadOnlyList<CustomerAddress> Addresses => _addresses.AsReadOnly();
 
     private readonly List<CustomerContact> _contacts = [];
-    public IReadOnlyList<CustomerContact> Contacts => _contacts;
+    public IReadOnlyList<CustomerContact> Contacts => _contacts.AsReadOnly();
 
     private readonly List<Order> _orders = [];
-    public IReadOnlyList<Order> Orders => _orders;
+    public IReadOnlyList<Order> Orders => _orders.AsReadOnly();
 
     private readonly List<Invoice> _invoices = [];
-    public IReadOnlyList<Invoice> Invoices => _invoices;
+    public IReadOnlyList<Invoice> Invoices => _invoices.AsReadOnly();
 
     private readonly List<Ticket> _tickets = [];
-    public IReadOnlyList<Ticket> Tickets => _tickets;
+    public IReadOnlyList<Ticket> Tickets => _tickets.AsReadOnly();
 
     private Customer() { }
 
@@ -136,7 +136,9 @@ public sealed class Customer : BaseEntity, IBranchScoped
 
     public void AddAddress(CustomerAddress address)
     {
-        ArgumentNullException.ThrowIfNull(address, nameof(address));
+        ArgumentNullException.ThrowIfNull(address);
+        EnsureCanAddChild(address, address.CustomerId, _addresses);
+
         if (_addresses.Count == 0)
             address.SetDefault();
         else if (address.IsDefault)
@@ -146,7 +148,9 @@ public sealed class Customer : BaseEntity, IBranchScoped
 
     public void AddContact(CustomerContact contact)
     {
-        ArgumentNullException.ThrowIfNull(contact, nameof(contact));
+        ArgumentNullException.ThrowIfNull(contact);
+        EnsureCanAddChild(contact, contact.CustomerId, _contacts);
+
         if (contact.IsPrimary)
             _contacts.ForEach(c => c.UnmarkAsPrimary());
         _contacts.Add(contact);

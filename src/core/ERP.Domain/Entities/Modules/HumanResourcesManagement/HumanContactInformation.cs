@@ -17,7 +17,7 @@ public sealed class HumanContactInformation : BaseEntity
     public HumanContactInformation(Human human, HumanContactType type, string value, bool isDefault = false)
     {
         ArgumentNullException.ThrowIfNull(human, nameof(human));
-        ArgumentException.ThrowIfNullOrEmpty(value, nameof(value));
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, nameof(value));
         Human = human;
         HumanId = human.Id;
         Type = type;
@@ -25,20 +25,20 @@ public sealed class HumanContactInformation : BaseEntity
         IsDefault = isDefault;
     }
 
-    public void ChangeValue(string value)
+    internal void ChangeValue(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         Value = value.Trim();
         Touch();
     }
 
-    public void SetDefault()
+    internal void SetDefault()
     {
         IsDefault = true;
         Touch();
     }
 
-    public void UnsetDefault()
+    internal void UnsetDefault()
     {
         IsDefault = false;
         Touch();

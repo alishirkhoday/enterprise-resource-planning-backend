@@ -30,19 +30,19 @@ public sealed class HumanSkill : BaseEntity
         Level = level;
     }
 
-    public void Assess(SkillLevel level, DateOnly assessedOn, string? assessedBy)
+    internal void Assess(SkillLevel level, DateOnly assessedOn, string? assessedBy)
     {
         Level = level;
         AssessedOn = assessedOn;
         AssessedBy = string.IsNullOrWhiteSpace(assessedBy) ? null : assessedBy.Trim();
     }
 
-    public void SetYearsOfExperience(decimal? years)
+    internal void SetYearsOfExperience(decimal? years)
     {
         if (years.HasValue)
             ArgumentOutOfRangeException.ThrowIfNegative(years.Value, nameof(years));
         YearsOfExperience = years;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

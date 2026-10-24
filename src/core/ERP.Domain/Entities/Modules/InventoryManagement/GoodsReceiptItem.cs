@@ -30,7 +30,7 @@ public sealed class GoodsReceiptItem : BaseEntity
     public bool RequiresInspection { get; private set; }
 
     private readonly List<Guid> _serialNumberIds = [];
-    public IReadOnlyList<Guid> SerialNumberIds => _serialNumberIds;
+    public IReadOnlyList<Guid> SerialNumberIds => _serialNumberIds.AsReadOnly();
 
     private GoodsReceiptItem() { }
 
@@ -56,7 +56,7 @@ public sealed class GoodsReceiptItem : BaseEntity
     }
 
     /// <summary>Records that part of the arrival failed inspection.</summary>
-    public void Reject(decimal rejectedQuantity, string reason)
+    internal void Reject(decimal rejectedQuantity, string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rejectedQuantity, nameof(rejectedQuantity));
@@ -66,14 +66,14 @@ public sealed class GoodsReceiptItem : BaseEntity
         RejectionReason = reason.Trim();
     }
 
-    public void SetBatch(Guid itemBatchId)
+    internal void SetBatch(Guid itemBatchId)
     {
         if (Item.TrackingType != ItemTrackingType.Batch)
             throw new InvalidOperationException($"Item {Item.Name} is not batch tracked.");
         ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
     }
 
-    public void AddSerialNumber(Guid serialNumberId)
+    internal void AddSerialNumber(Guid serialNumberId)
     {
         if (Item.TrackingType != ItemTrackingType.Serial)
             throw new InvalidOperationException($"Item {Item.Name} is not serial tracked.");
@@ -84,10 +84,10 @@ public sealed class GoodsReceiptItem : BaseEntity
         _serialNumberIds.Add(serialNumberId);
     }
 
-    public void ScopeToStorageLocation(Guid storageLocationId) =>
+    internal void ScopeToStorageLocation(Guid storageLocationId) =>
         StorageLocationId = storageLocationId == Guid.Empty ? null : storageLocationId;
 
-    public void MarkAsRequiringInspection() => RequiresInspection = true;
+    internal void MarkAsRequiringInspection() => RequiresInspection = true;
 
     /// <summary>Whether the tracking identifiers this item demands have all been supplied.</summary>
     public bool IsTrackingComplete => Item.TrackingType switch

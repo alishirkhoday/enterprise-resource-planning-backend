@@ -252,7 +252,7 @@ namespace ERP.Test.xUnit.Application
         {
             var letter = CreateRegisteredLetter();
             var referral = letter.ReferTo(Guid.NewGuid(), Guid.NewGuid());
-            referral.Respond("Done.");
+            referral.Letter.RespondLetterReferral(referral.Id, "Done.");
 
             var letters = LettersReturning(letter);
 

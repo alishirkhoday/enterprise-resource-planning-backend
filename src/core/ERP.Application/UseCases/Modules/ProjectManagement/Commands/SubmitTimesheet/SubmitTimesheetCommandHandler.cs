@@ -61,11 +61,6 @@ namespace ERP.Application.UseCases.Modules.ProjectManagement.Commands.SubmitTime
             if (built.IsFailure)
                 return Result.Failure<TimesheetDto, Error>(built.Error);
 
-            foreach (var entry in built.Value)
-            {
-                timesheet.AddEntry(entry);
-            }
-
             try
             {
                 timesheet.Submit();
@@ -100,25 +95,27 @@ namespace ERP.Application.UseCases.Modules.ProjectManagement.Commands.SubmitTime
                             Errors.General.NotFound(line.ProjectTaskId.Value.ToString(), nameof(ProjectTask)));
 
                     entry = new TimesheetEntry(timesheet, line.WorkDate, line.Hours, task);
+                    timesheet.AddEntry(entry);
                 }
                 else
                 {
                     // No task means internal time, and internal time is never billable whatever
                     // the request says - there is no customer to bill it to.
                     entry = new TimesheetEntry(timesheet, line.WorkDate, line.Hours, line.ActivityType!.Value);
-                    entry.MarkAsNonBillable();
+                    timesheet.AddEntry(entry);
+                    timesheet.MarkTimesheetEntryAsNonBillable(entry.Id);
                 }
 
                 if (line.ProjectTaskId is not null && !line.IsBillable)
-                    entry.MarkAsNonBillable();
+                    timesheet.MarkTimesheetEntryAsNonBillable(entry.Id);
 
                 if (line.BillingRate is not null)
-                    entry.SetBillingRate(Money.Create(line.BillingRate.Value, "IRR"));
+                    timesheet.SetTimesheetEntryBillingRate(entry.Id, Money.Create(line.BillingRate.Value, "IRR"));
 
                 if (line.CostCenterId is not null)
-                    entry.AssignCostCenter(line.CostCenterId.Value);
+                    timesheet.AssignTimesheetEntryCostCenter(entry.Id, line.CostCenterId.Value);
 
-                entry.SetDescription(line.Description);
+                timesheet.SetTimesheetEntryDescription(entry.Id, line.Description);
                 built.Add(entry);
             }
 

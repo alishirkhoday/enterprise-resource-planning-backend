@@ -10,7 +10,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// some accounts belong to nobody. What they are paid and where they sit lives on their
 /// contracts rather than here, because both change while the person does not.
 /// </summary>
-public sealed class Human : BaseEntity, IBranchScoped
+public sealed partial class Human : AggregateRoot, IBranchScoped
 {
     public User User { get; private set; } = default!;
     public Guid UserId { get; private set; }
@@ -45,43 +45,43 @@ public sealed class Human : BaseEntity, IBranchScoped
     public Guid? WorkCalendarId { get; private set; }
 
     private readonly List<Human> _directReports = [];
-    public IReadOnlyList<Human> DirectReports => _directReports;
+    public IReadOnlyList<Human> DirectReports => _directReports.AsReadOnly();
 
     private readonly List<HumanContactInformation> _contactInformation = [];
-    public IReadOnlyList<HumanContactInformation> ContactInformation => _contactInformation;
+    public IReadOnlyList<HumanContactInformation> ContactInformation => _contactInformation.AsReadOnly();
 
     private readonly List<HumanAddress> _addresses = [];
-    public IReadOnlyList<HumanAddress> Addresses => _addresses;
+    public IReadOnlyList<HumanAddress> Addresses => _addresses.AsReadOnly();
 
     private readonly List<HumanBankAccount> _bankAccounts = [];
-    public IReadOnlyList<HumanBankAccount> BankAccounts => _bankAccounts;
+    public IReadOnlyList<HumanBankAccount> BankAccounts => _bankAccounts.AsReadOnly();
 
     private readonly List<HumanEducation> _educations = [];
-    public IReadOnlyList<HumanEducation> Educations => _educations;
+    public IReadOnlyList<HumanEducation> Educations => _educations.AsReadOnly();
 
     private readonly List<HumanWorkExperience> _workExperiences = [];
-    public IReadOnlyList<HumanWorkExperience> WorkExperiences => _workExperiences;
+    public IReadOnlyList<HumanWorkExperience> WorkExperiences => _workExperiences.AsReadOnly();
 
     private readonly List<HumanContract> _contracts = [];
-    public IReadOnlyList<HumanContract> Contracts => _contracts;
+    public IReadOnlyList<HumanContract> Contracts => _contracts.AsReadOnly();
 
     private readonly List<HumanAttendanceRecord> _attendanceRecords = [];
-    public IReadOnlyList<HumanAttendanceRecord> AttendanceRecords => _attendanceRecords;
+    public IReadOnlyList<HumanAttendanceRecord> AttendanceRecords => _attendanceRecords.AsReadOnly();
 
     private readonly List<HumanRequest> _leaveRequests = [];
-    public IReadOnlyList<HumanRequest> LeaveRequests => _leaveRequests;
+    public IReadOnlyList<HumanRequest> LeaveRequests => _leaveRequests.AsReadOnly();
 
     private readonly List<Payroll> _payrolls = [];
-    public IReadOnlyList<Payroll> Payrolls => _payrolls;
+    public IReadOnlyList<Payroll> Payrolls => _payrolls.AsReadOnly();
 
     private readonly List<HumanDependent> _dependents = [];
-    public IReadOnlyList<HumanDependent> Dependents => _dependents;
+    public IReadOnlyList<HumanDependent> Dependents => _dependents.AsReadOnly();
 
     private readonly List<HumanDocument> _documents = [];
-    public IReadOnlyList<HumanDocument> Documents => _documents;
+    public IReadOnlyList<HumanDocument> Documents => _documents.AsReadOnly();
 
     private readonly List<HumanSkill> _skills = [];
-    public IReadOnlyList<HumanSkill> Skills => _skills;
+    public IReadOnlyList<HumanSkill> Skills => _skills.AsReadOnly();
 
     private Human() { }
 
@@ -177,7 +177,9 @@ public sealed class Human : BaseEntity, IBranchScoped
 
     public void AddContactInformation(HumanContactInformation contactInformation)
     {
-        ArgumentNullException.ThrowIfNull(contactInformation, nameof(contactInformation));
+        ArgumentNullException.ThrowIfNull(contactInformation);
+        EnsureCanAddChild(contactInformation, contactInformation.HumanId, _contactInformation);
+
 
         // prevent duplicates (same type + value)
         if (_contactInformation.Any(c => c.Type == contactInformation.Type && string.Equals(c.Value, contactInformation.Value)))
@@ -204,7 +206,9 @@ public sealed class Human : BaseEntity, IBranchScoped
 
     public void AddAddress(HumanAddress address)
     {
-        ArgumentNullException.ThrowIfNull(address, nameof(address));
+        ArgumentNullException.ThrowIfNull(address);
+        EnsureCanAddChild(address, address.HumanId, _addresses);
+
         if (_addresses.Count == 0)
             address.SetDefault();
         else if (address.IsDefault)
@@ -214,7 +218,9 @@ public sealed class Human : BaseEntity, IBranchScoped
 
     public void AddBankAccount(HumanBankAccount bankAccount)
     {
-        ArgumentNullException.ThrowIfNull(bankAccount, nameof(bankAccount));
+        ArgumentNullException.ThrowIfNull(bankAccount);
+        EnsureCanAddChild(bankAccount, bankAccount.HumanId, _bankAccounts);
+
         if (_bankAccounts.Any(b => b.AccountNumber == bankAccount.AccountNumber))
             throw new InvalidOperationException("This bank account is already registered for the employee.");
         _bankAccounts.Add(bankAccount);
@@ -222,19 +228,25 @@ public sealed class Human : BaseEntity, IBranchScoped
 
     public void AddDependent(HumanDependent dependent)
     {
-        ArgumentNullException.ThrowIfNull(dependent, nameof(dependent));
+        ArgumentNullException.ThrowIfNull(dependent);
+        EnsureCanAddChild(dependent, dependent.HumanId, _dependents);
+
         _dependents.Add(dependent);
     }
 
     public void AddDocument(HumanDocument document)
     {
-        ArgumentNullException.ThrowIfNull(document, nameof(document));
+        ArgumentNullException.ThrowIfNull(document);
+        EnsureCanAddChild(document, document.HumanId, _documents);
+
         _documents.Add(document);
     }
 
     public void AddSkill(HumanSkill skill)
     {
-        ArgumentNullException.ThrowIfNull(skill, nameof(skill));
+        ArgumentNullException.ThrowIfNull(skill);
+        EnsureCanAddChild(skill, skill.HumanId, _skills);
+
         if (_skills.Any(s => s.SkillId == skill.SkillId))
             throw new InvalidOperationException("This skill is already registered for the employee.");
         _skills.Add(skill);
@@ -254,8 +266,8 @@ public sealed class Human : BaseEntity, IBranchScoped
 
     private static void Validate(string name, string family, DateOnly birthDate)
     {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        ArgumentException.ThrowIfNullOrEmpty(family, nameof(family));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(family, nameof(family));
 
         var min = new DateOnly(1700, 1, 1);
         var max = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -265,5 +277,17 @@ public sealed class Human : BaseEntity, IBranchScoped
 
         if (birthDate > max)
             throw new ArgumentOutOfRangeException(nameof(birthDate), "BirthDate cannot be in the future.");
+    }
+    public void AddEducation(HumanEducation child)
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        EnsureCanAddChild(child, child.HumanId, _educations);
+        _educations.Add(child);
+    }
+    public void AddWorkExperience(HumanWorkExperience child)
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        EnsureCanAddChild(child, child.HumanId, _workExperiences);
+        _workExperiences.Add(child);
     }
 }

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Organizations;
 /// The legal entity the installation keeps books for. Everything financial ultimately rolls up to one,
 /// and a group of companies is modelled as several organizations sharing one database.
 /// </summary>
-public sealed class Organization : BaseEntity
+public sealed class Organization : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public string? TradeName { get; private set; }
@@ -51,15 +51,16 @@ public sealed class Organization : BaseEntity
 
     public void SetLegalIdentifiers(string? registrationNumber, string? nationalIdentifier, string? economicCode)
     {
+        var parsedEconomicCode = string.IsNullOrWhiteSpace(economicCode) ? null : Primitives.ValueObjects.EconomicCode.Create(economicCode);
         RegistrationNumber = string.IsNullOrWhiteSpace(registrationNumber) ? null : registrationNumber.Trim();
         NationalIdentifier = string.IsNullOrWhiteSpace(nationalIdentifier) ? null : nationalIdentifier.Trim();
-        EconomicCode = string.IsNullOrWhiteSpace(economicCode) ? null : Primitives.ValueObjects.EconomicCode.Create(economicCode);
+        EconomicCode = parsedEconomicCode;
     }
 
     public void SetAddress(Address address)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
-        Address = address;
+        Address = address.Copy();
     }
 
     public void SetContactInformation(string? telephone, string? faxNumber, string? email, string? website)

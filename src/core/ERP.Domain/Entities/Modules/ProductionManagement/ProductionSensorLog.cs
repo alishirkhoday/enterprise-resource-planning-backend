@@ -4,7 +4,7 @@
 /// Readings taken off a machine automatically. High volume and append-only, which is why it
 /// is kept apart from the reports people write.
 /// </summary>
-public sealed class ProductionSensorLog : BaseEntity
+public sealed class ProductionSensorLog : AggregateRoot
 {
     public Machine Machine { get; private set; } = default!;
     public string SensorName { get; private set; } = default!;

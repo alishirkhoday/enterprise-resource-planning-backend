@@ -192,9 +192,11 @@ namespace ERP.Test.xUnit.Domain
                 DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)),
                 "IRR");
             var phase = new ProjectPhase(project, "Design", 1, DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 3, 31)), Percentage.Create(25m));
+            project.AddPhase(phase);
             var milestone = new ProjectMilestone(phase, "Design signed off", new DateOnly(2026, 3, 20));
+            phase.Project.AddProjectPhaseMilestone(phase.Id, milestone);
 
-            milestone.Achieve(new DateOnly(2026, 3, 18));
+            milestone.Phase.Project.AchieveProjectMilestone(milestone.Id, new DateOnly(2026, 3, 18));
 
             var achieved = Assert.Single(milestone.DomainEvents.OfType<ProjectMilestoneAchieved>());
             Assert.Equal(project.Id, achieved.ProjectId);

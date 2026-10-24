@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A subsidiary account. It answers whose balance a ledger line belongs to, without multiplying
 /// the chart of accounts by one account per customer.
 /// </summary>
-public sealed class DetailAccount : BaseEntity
+public sealed class DetailAccount : AggregateRoot
 {
     public DetailAccountGroup Group { get; private set; } = default!;
     public Guid GroupId { get; private set; }

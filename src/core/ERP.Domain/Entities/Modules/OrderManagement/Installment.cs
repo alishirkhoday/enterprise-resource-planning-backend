@@ -54,7 +54,7 @@ public sealed class Installment : BaseEntity
         }
     }
 
-    public void ApplyLateFee(Money lateFee)
+    internal void ApplyLateFee(Money lateFee)
     {
         ArgumentNullException.ThrowIfNull(lateFee, nameof(lateFee));
         if (IsPaid)

@@ -38,15 +38,15 @@ public sealed class ServiceContractCoverage : BaseEntity
         SerialNumberId = serialNumberId == Guid.Empty ? null : serialNumberId;
     }
 
-    public void SetLocation(Address location)
+    internal void SetLocation(Address location)
     {
         ArgumentNullException.ThrowIfNull(location, nameof(location));
         Location = location;
     }
 
-    public void SetInstalledOn(DateOnly installedOn) => InstalledOn = installedOn;
+    internal void SetInstalledOn(DateOnly installedOn) => InstalledOn = installedOn;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public bool IsSpecificUnit => SerialNumberId.HasValue;
 }

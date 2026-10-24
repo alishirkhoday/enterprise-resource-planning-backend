@@ -57,27 +57,27 @@ public sealed class PurchaseInvoiceItem : BaseEntity
         TaxPercentage = Percentage.Zero();
     }
 
-    public void LinkToOrderItem(Guid purchaseOrderItemId) =>
+    internal void LinkToOrderItem(Guid purchaseOrderItemId) =>
         PurchaseOrderItemId = purchaseOrderItemId == Guid.Empty ? null : purchaseOrderItemId;
 
-    public void SetDiscount(Percentage discountPercentage)
+    internal void SetDiscount(Percentage discountPercentage)
     {
         ArgumentNullException.ThrowIfNull(discountPercentage, nameof(discountPercentage));
         DiscountPercentage = discountPercentage;
     }
 
-    public void SetTax(Guid taxId, Percentage taxPercentage)
+    internal void SetTax(Guid taxId, Percentage taxPercentage)
     {
         ArgumentNullException.ThrowIfNull(taxPercentage, nameof(taxPercentage));
         TaxId = taxId == Guid.Empty ? null : taxId;
         TaxPercentage = taxPercentage;
     }
 
-    public void SetPostingTargets(Guid? accountId, Guid? costCenterId)
+    internal void SetPostingTargets(Guid? accountId, Guid? costCenterId)
     {
         AccountId = accountId == Guid.Empty ? null : accountId;
         CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

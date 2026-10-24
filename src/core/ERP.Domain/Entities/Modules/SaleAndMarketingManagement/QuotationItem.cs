@@ -56,24 +56,24 @@ public sealed class QuotationItem : BaseEntity
         TaxPercentage = Percentage.Zero();
     }
 
-    public void SetDiscount(Percentage discountPercentage)
+    internal void SetDiscount(Percentage discountPercentage)
     {
         ArgumentNullException.ThrowIfNull(discountPercentage, nameof(discountPercentage));
         DiscountPercentage = discountPercentage;
     }
 
-    public void SetTax(Guid taxId, Percentage taxPercentage)
+    internal void SetTax(Guid taxId, Percentage taxPercentage)
     {
         ArgumentNullException.ThrowIfNull(taxPercentage, nameof(taxPercentage));
         TaxId = taxId == Guid.Empty ? null : taxId;
         TaxPercentage = taxPercentage;
     }
 
-    public void SetDeliveryLeadTime(int days)
+    internal void SetDeliveryLeadTime(int days)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(days, nameof(days));
         DeliveryLeadTimeDays = days;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

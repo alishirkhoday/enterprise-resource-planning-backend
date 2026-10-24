@@ -26,7 +26,7 @@ public sealed class WarehouseStorageLocation : BaseEntity
         Description = description;
     }
 
-    public void Update(string code, string name)
+    internal void Update(string code, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
@@ -34,5 +34,5 @@ public sealed class WarehouseStorageLocation : BaseEntity
         Name = name.Trim();
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
 }

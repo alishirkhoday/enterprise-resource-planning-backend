@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// Work carried out on a machine, whether planned or after a breakdown, with the parts and
 /// labour it consumed.
 /// </summary>
-public sealed class MaintenanceWorkOrder : BaseEntity
+public sealed partial class MaintenanceWorkOrder : AggregateRoot
 {
     public string Number { get; private set; } = default!;
 
@@ -37,7 +37,7 @@ public sealed class MaintenanceWorkOrder : BaseEntity
     public string? WorkPerformed { get; private set; }
 
     private readonly List<MaintenancePartUsage> _partsUsed = [];
-    public IReadOnlyList<MaintenancePartUsage> PartsUsed => _partsUsed;
+    public IReadOnlyList<MaintenancePartUsage> PartsUsed => _partsUsed.AsReadOnly();
 
     private MaintenanceWorkOrder() { }
 
@@ -94,11 +94,14 @@ public sealed class MaintenanceWorkOrder : BaseEntity
 
     public void UsePart(MaintenancePartUsage partUsage)
     {
-        ArgumentNullException.ThrowIfNull(partUsage, nameof(partUsage));
+        ArgumentNullException.ThrowIfNull(partUsage);
+        EnsureCanAddChild(partUsage, partUsage.WorkOrderId, _partsUsed);
+
         if (Status != MaintenanceWorkOrderStatus.InProgress)
             throw new InvalidOperationException("Parts can only be booked while the work is in progress.");
+        var partsCost = PartsCost.Add(partUsage.TotalCost);
         _partsUsed.Add(partUsage);
-        PartsCost = PartsCost.Add(partUsage.TotalCost);
+        PartsCost = partsCost;
     }
 
     public void RecordLabour(decimal hours, Money hourlyRate)
@@ -107,8 +110,10 @@ public sealed class MaintenanceWorkOrder : BaseEntity
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hours, nameof(hours));
         if (Status != MaintenanceWorkOrderStatus.InProgress)
             throw new InvalidOperationException("Labour can only be booked while the work is in progress.");
-        ActualHours += hours;
-        LabourCost = LabourCost.Add(hourlyRate.Multiply(hours));
+        var actualHours = ActualHours + hours;
+        var labourCost = LabourCost.Add(hourlyRate.Multiply(hours));
+        ActualHours = actualHours;
+        LabourCost = labourCost;
     }
 
     public void Complete(string workPerformed)

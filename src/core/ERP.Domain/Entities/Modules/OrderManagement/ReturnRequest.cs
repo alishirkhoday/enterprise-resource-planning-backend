@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.OrderManagement;
 /// A customer asking to send goods back. Approving it authorises the return; receiving it is
 /// what puts the stock back and releases the refund.
 /// </summary>
-public sealed class ReturnRequest : BaseEntity
+public sealed partial class ReturnRequest : AggregateRoot
 {
     public string Number { get; private set; } = default!;
 
@@ -31,7 +31,7 @@ public sealed class ReturnRequest : BaseEntity
     public string? RejectionReason { get; private set; }
 
     private readonly List<ReturnRequestItem> _items = [];
-    public IReadOnlyList<ReturnRequestItem> Items => _items;
+    public IReadOnlyList<ReturnRequestItem> Items => _items.AsReadOnly();
 
     private ReturnRequest() { }
 
@@ -65,7 +65,9 @@ public sealed class ReturnRequest : BaseEntity
 
     public void AddItem(ReturnRequestItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.RequestId, _items);
+
         if (Status != ReturnRequestStatus.Requested)
             throw new InvalidOperationException($"Lines cannot be added while the request is {Status}.");
         _items.Add(item);

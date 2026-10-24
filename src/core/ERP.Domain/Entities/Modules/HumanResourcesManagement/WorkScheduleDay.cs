@@ -47,7 +47,7 @@ public sealed class WorkScheduleDay : BaseEntity
         }
     }
 
-    public void MarkAsRestDay()
+    internal void MarkAsRestDay()
     {
         IsWorkingDay = false;
         StartTime = null;

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// Commission earned by a salesperson on one sale, from the moment it is accrued until payroll
 /// actually pays it.
 /// </summary>
-public sealed class Commission : BaseEntity
+public sealed class Commission : AggregateRoot
 {
     public Guid SalesRepHumanId { get; private set; }
 

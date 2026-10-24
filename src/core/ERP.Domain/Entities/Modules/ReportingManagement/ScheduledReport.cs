@@ -3,7 +3,7 @@
 /// <summary>
 /// An arrangement to send a report on a schedule, and to whom.
 /// </summary>
-public sealed class ScheduledReport : BaseEntity
+public sealed class ScheduledReport : AggregateRoot
 {
     public ReportTemplate Template { get; private set; } = default!;
     public string CronExpression { get; private set; } = default!; // تعریف زمان‌بندی به فرمت Cron

@@ -101,13 +101,13 @@ public sealed class MaterialRequirementPlanLine : BaseEntity
         SuggestedAction = PlannedOrderAction.None;
     }
 
-    public void SetSafetyQuantity(decimal safetyQuantity)
+    internal void SetSafetyQuantity(decimal safetyQuantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(safetyQuantity, nameof(safetyQuantity));
         SafetyQuantity = safetyQuantity;
     }
 
-    public void TraceToParent(Guid parentLineId, short billOfMaterialsLevel)
+    internal void TraceToParent(Guid parentLineId, short billOfMaterialsLevel)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(billOfMaterialsLevel, nameof(billOfMaterialsLevel));
         ParentLineId = parentLineId == Guid.Empty ? null : parentLineId;
@@ -118,24 +118,25 @@ public sealed class MaterialRequirementPlanLine : BaseEntity
     /// Records the proposal. The release date is derived here rather than supplied, so it can never
     /// disagree with the lead time that was used.
     /// </summary>
-    public void Suggest(PlannedOrderAction action, decimal plannedOrderQuantity, int leadTimeDays, Guid? supplierId = null)
+    internal void Suggest(PlannedOrderAction action, decimal plannedOrderQuantity, int leadTimeDays, Guid? supplierId = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(plannedOrderQuantity, nameof(plannedOrderQuantity));
         ArgumentOutOfRangeException.ThrowIfNegative(leadTimeDays, nameof(leadTimeDays));
         if (action != PlannedOrderAction.None && plannedOrderQuantity == 0m)
             throw new ArgumentException("An action that orders nothing is not an action.", nameof(plannedOrderQuantity));
 
+        var releaseDate = RequiredOn.AddDays(-leadTimeDays);
         SuggestedAction = action;
         PlannedOrderQuantity = plannedOrderQuantity;
         LeadTimeDays = leadTimeDays;
         SupplierId = supplierId == Guid.Empty ? null : supplierId;
-        SuggestedReleaseDate = RequiredOn.AddDays(-leadTimeDays);
+        SuggestedReleaseDate = releaseDate;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     /// <summary>Records what the suggestion turned into, so it is not acted on twice.</summary>
-    public void MarkAsReleased(string referenceType, string referenceId)
+    internal void MarkAsReleased(string referenceType, string referenceId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(referenceType, nameof(referenceType));
         ArgumentException.ThrowIfNullOrWhiteSpace(referenceId, nameof(referenceId));

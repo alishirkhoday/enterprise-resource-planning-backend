@@ -5,7 +5,7 @@ namespace ERP.Domain.Entities.Modules.WarehouseManagement;
 /// <summary>
 /// Goods leaving the warehouse towards a customer, with the paperwork and tracking that go with them.
 /// </summary>
-public sealed class Shipment : BaseEntity, IBranchScoped
+public sealed partial class Shipment : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -37,7 +37,7 @@ public sealed class Shipment : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<ShipmentItem> _items = [];
-    public IReadOnlyList<ShipmentItem> Items => _items;
+    public IReadOnlyList<ShipmentItem> Items => _items.AsReadOnly();
 
     private Shipment() { }
 
@@ -103,7 +103,9 @@ public sealed class Shipment : BaseEntity, IBranchScoped
 
     public void AddItem(ShipmentItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.ShipmentId, _items);
+
         EnsureDraft();
         _items.Add(item);
     }

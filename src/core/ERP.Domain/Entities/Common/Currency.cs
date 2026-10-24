@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// A currency the system can hold amounts in. Exactly one currency should be marked as the base
 /// currency; every financial report is expressed in it.
 /// </summary>
-public sealed class Currency : BaseEntity
+public sealed class Currency : AggregateRoot
 {
     /// <summary>ISO 4217 code, for example IRR or USD.</summary>
     public string Code { get; private set; } = default!;
@@ -22,9 +22,7 @@ public sealed class Currency : BaseEntity
     public Currency(string code, string name, int decimalPlaces = 0, string? symbol = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces, nameof(decimalPlaces));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(decimalPlaces, 6, nameof(decimalPlaces));
+        ValidateDetails(name, decimalPlaces);
         Code = code.Trim().ToUpperInvariant();
         Name = name.Trim();
         DecimalPlaces = decimalPlaces;
@@ -34,8 +32,7 @@ public sealed class Currency : BaseEntity
 
     public void Update(string name, int decimalPlaces, string? symbol)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces, nameof(decimalPlaces));
+        ValidateDetails(name, decimalPlaces);
         Name = name.Trim();
         DecimalPlaces = decimalPlaces;
         Symbol = string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim();
@@ -57,4 +54,10 @@ public sealed class Currency : BaseEntity
     public Money Amount(decimal value) => Money.Create(value, Code);
 
     public Money ZeroAmount() => Money.Zero(Code);
+    private static void ValidateDetails(string name, int decimalPlaces)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces, nameof(decimalPlaces));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(decimalPlaces, 6, nameof(decimalPlaces));
+    }
 }

@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// An inspection carried out against a quality plan, recording what was measured rather than
 /// only whether it passed.
 /// </summary>
-public sealed class QualityControlCheck : BaseEntity
+public sealed partial class QualityControlCheck : AggregateRoot
 {
     public ProductionTask? Task { get; private set; }
     public Guid? TaskId { get; private set; }
@@ -31,7 +31,7 @@ public sealed class QualityControlCheck : BaseEntity
     public string? Notes { get; private set; }
 
     private readonly List<QualityMeasurement> _measurements = [];
-    public IReadOnlyList<QualityMeasurement> Measurements => _measurements;
+    public IReadOnlyList<QualityMeasurement> Measurements => _measurements.AsReadOnly();
 
     private QualityControlCheck() { }
 
@@ -65,7 +65,9 @@ public sealed class QualityControlCheck : BaseEntity
 
     public void AddMeasurement(QualityMeasurement measurement)
     {
-        ArgumentNullException.ThrowIfNull(measurement, nameof(measurement));
+        ArgumentNullException.ThrowIfNull(measurement);
+        EnsureCanAddChild(measurement, measurement.CheckId, _measurements);
+
         _measurements.Add(measurement);
     }
 

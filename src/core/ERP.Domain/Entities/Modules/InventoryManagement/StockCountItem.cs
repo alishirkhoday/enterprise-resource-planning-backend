@@ -52,18 +52,18 @@ public sealed class StockCountItem : BaseEntity
         UnitCost = unitCost;
     }
 
-    public void SetBatch(Guid itemBatchId) => ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
+    internal void SetBatch(Guid itemBatchId) => ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
 
-    public void ScopeToStorageLocation(Guid storageLocationId) =>
+    internal void ScopeToStorageLocation(Guid storageLocationId) =>
         StorageLocationId = storageLocationId == Guid.Empty ? null : storageLocationId;
 
-    public void RecordCount(decimal countedQuantity)
+    internal void RecordCount(decimal countedQuantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(countedQuantity, nameof(countedQuantity));
         CountedQuantity = countedQuantity;
     }
 
-    public void RecordRecount(decimal recountedQuantity)
+    internal void RecordRecount(decimal recountedQuantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(recountedQuantity, nameof(recountedQuantity));
         if (CountedQuantity is null)
@@ -72,7 +72,7 @@ public sealed class StockCountItem : BaseEntity
         CountedQuantity = recountedQuantity;
     }
 
-    public void ExplainDiscrepancy(string reason)
+    internal void ExplainDiscrepancy(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         DiscrepancyReason = reason.Trim();

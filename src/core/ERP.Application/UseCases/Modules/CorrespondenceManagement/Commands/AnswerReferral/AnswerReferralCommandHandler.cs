@@ -29,9 +29,9 @@ namespace ERP.Application.UseCases.Modules.CorrespondenceManagement.Commands.Ans
             try
             {
                 if (request.IsWithdrawal)
-                    referral.Withdraw(request.Response);
+                    letter.WithdrawLetterReferral(referral.Id, request.Response);
                 else
-                    referral.Respond(request.Response);
+                    letter.RespondLetterReferral(referral.Id, request.Response);
             }
             catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
             {

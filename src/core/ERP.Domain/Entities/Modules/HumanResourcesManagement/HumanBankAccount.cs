@@ -20,9 +20,9 @@ public sealed class HumanBankAccount : BaseEntity
     public HumanBankAccount(Human human, string bankName, string accountNumber, string cardNumber, string internationalBankAccountNumber)
     {
         ArgumentNullException.ThrowIfNull(human, nameof(human));
-        ArgumentException.ThrowIfNullOrEmpty(bankName, nameof(bankName));
-        ArgumentException.ThrowIfNullOrEmpty(accountNumber, nameof(accountNumber));
-        ArgumentException.ThrowIfNullOrEmpty(cardNumber, nameof(cardNumber));
+        ArgumentException.ThrowIfNullOrWhiteSpace(bankName, nameof(bankName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountNumber, nameof(accountNumber));
+        ArgumentException.ThrowIfNullOrWhiteSpace(cardNumber, nameof(cardNumber));
         Human = human;
         HumanId = human.Id;
         BankName = bankName.Trim();
@@ -31,17 +31,17 @@ public sealed class HumanBankAccount : BaseEntity
         InternationalBankAccountNumber = internationalBankAccountNumber.Trim();
     }
 
-    public void Update(string bankName, string accountNumber, string cardNumber, string internationalBankAccountNumber)
+    internal void Update(string bankName, string accountNumber, string cardNumber, string internationalBankAccountNumber)
     {
-        ArgumentException.ThrowIfNullOrEmpty(bankName, nameof(bankName));
-        ArgumentException.ThrowIfNullOrEmpty(accountNumber, nameof(accountNumber));
-        ArgumentException.ThrowIfNullOrEmpty(cardNumber, nameof(cardNumber));
-        ArgumentException.ThrowIfNullOrEmpty(internationalBankAccountNumber, nameof(internationalBankAccountNumber));
+        ArgumentException.ThrowIfNullOrWhiteSpace(bankName, nameof(bankName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountNumber, nameof(accountNumber));
+        ArgumentException.ThrowIfNullOrWhiteSpace(cardNumber, nameof(cardNumber));
+        ArgumentException.ThrowIfNullOrWhiteSpace(internationalBankAccountNumber, nameof(internationalBankAccountNumber));
         BankName = bankName.Trim();
         AccountNumber = accountNumber.Trim();
         CardNumber = cardNumber.Trim();
         InternationalBankAccountNumber = internationalBankAccountNumber.Trim();
     }
 
-    public void SetIsDefault() => IsDefault = true;
+    internal void SetIsDefault() => IsDefault = true;
 }

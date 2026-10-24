@@ -45,7 +45,7 @@ public sealed class WalletTransaction : BaseEntity
         BalanceAfter = balance;
     }
 
-    public void SetReference(string referenceType, string referenceId)
+    internal void SetReference(string referenceType, string referenceId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(referenceType, nameof(referenceType));
         ArgumentException.ThrowIfNullOrWhiteSpace(referenceId, nameof(referenceId));
@@ -53,5 +53,5 @@ public sealed class WalletTransaction : BaseEntity
         ReferenceId = referenceId.Trim();
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

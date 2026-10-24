@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.OrderManagement;
 /// A code that reduces the price of an order, bounded by a validity window, a usage limit and
 /// a minimum order value.
 /// </summary>
-public sealed class DiscountCode : BaseEntity
+public sealed class DiscountCode : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string? Title { get; private set; }

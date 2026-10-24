@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Workflows;
 /// One document travelling through an <see cref="ApprovalWorkflow"/>, together with every decision
 /// taken on it. The document itself only needs to read <see cref="Status"/>.
 /// </summary>
-public sealed class ApprovalRequest : BaseEntity
+public sealed class ApprovalRequest : AggregateRoot
 {
     public ApprovalWorkflow Workflow { get; private set; } = default!;
     public Guid WorkflowId { get; private set; }
@@ -23,7 +23,7 @@ public sealed class ApprovalRequest : BaseEntity
     public decimal? Amount { get; private set; }
 
     private readonly List<ApprovalAction> _actions = [];
-    public IReadOnlyList<ApprovalAction> Actions => _actions;
+    public IReadOnlyList<ApprovalAction> Actions => _actions.AsReadOnly();
 
     private ApprovalRequest() { }
 

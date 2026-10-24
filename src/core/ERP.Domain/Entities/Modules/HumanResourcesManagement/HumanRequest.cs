@@ -8,7 +8,7 @@
 /// approved. Otherwise the same week can be booked repeatedly while the first request sits
 /// in a queue.
 /// </summary>
-public sealed class HumanRequest : BaseEntity
+public sealed class HumanRequest : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }

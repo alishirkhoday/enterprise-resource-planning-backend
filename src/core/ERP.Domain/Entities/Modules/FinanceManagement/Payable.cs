@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// An amount the organization owes a supplier or other party, tracked until it is fully settled.
 /// </summary>
-public sealed class Payable : BaseEntity, IBranchScoped
+public sealed class Payable : AggregateRoot, IBranchScoped
 {
     /// <summary>The subsidiary account of the party that is owed the money.</summary>
     public Guid PartyDetailAccountId { get; private set; }
@@ -63,9 +63,9 @@ public sealed class Payable : BaseEntity, IBranchScoped
 
     public void ApplyPaymentTerm(Guid paymentTermId, DateOnly dueDate)
     {
-        PaymentTermId = paymentTermId == Guid.Empty ? null : paymentTermId;
         if (dueDate < IssueDate)
             throw new ArgumentOutOfRangeException(nameof(dueDate), "DueDate cannot be earlier than IssueDate.");
+        PaymentTermId = paymentTermId == Guid.Empty ? null : paymentTermId;
         DueDate = dueDate;
     }
 

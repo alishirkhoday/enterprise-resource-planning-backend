@@ -24,7 +24,8 @@ namespace ERP.Test.xUnit.Domain
         private static PayrollItem Earning(Payroll payroll, string code, decimal amount, bool taxable = true, bool insurable = true)
         {
             var item = new PayrollItem(payroll, code, code, SalaryItemNature.Earning, Money.Create(amount, Currency));
-            item.SetTaxTreatment(taxable, insurable);
+            payroll.AddItem(item);
+            item.Payroll.SetPayrollItemTaxTreatment(item.Id, taxable, insurable);
             return item;
         }
 
@@ -35,8 +36,8 @@ namespace ERP.Test.xUnit.Domain
         public void Net_pay_is_gross_less_deductions()
         {
             var payroll = CreatePayroll();
-            payroll.AddItem(Earning(payroll, "BASE", 100_000_000m));
-            payroll.AddItem(Earning(payroll, "HOUSING", 9_000_000m));
+            Earning(payroll, "BASE", 100_000_000m);
+            Earning(payroll, "HOUSING", 9_000_000m);
             payroll.AddItem(Deduction(payroll, "INSURANCE", 7_630_000m));
 
             Assert.Equal(109_000_000m, payroll.GrossPay.Amount);
@@ -48,8 +49,8 @@ namespace ERP.Test.xUnit.Domain
         public void A_non_taxable_earning_stays_out_of_the_tax_base()
         {
             var payroll = CreatePayroll();
-            payroll.AddItem(Earning(payroll, "BASE", 100_000_000m));
-            payroll.AddItem(Earning(payroll, "MEALS", 5_000_000m, taxable: false, insurable: false));
+            Earning(payroll, "BASE", 100_000_000m);
+            Earning(payroll, "MEALS", 5_000_000m, taxable: false, insurable: false);
 
             Assert.Equal(105_000_000m, payroll.GrossPay.Amount);
             Assert.Equal(100_000_000m, payroll.TaxableBase.Amount);
@@ -60,7 +61,7 @@ namespace ERP.Test.xUnit.Domain
         public void The_employer_contribution_is_a_cost_but_not_a_deduction()
         {
             var payroll = CreatePayroll();
-            payroll.AddItem(Earning(payroll, "BASE", 100_000_000m));
+            Earning(payroll, "BASE", 100_000_000m);
             payroll.AddItem(new PayrollItem(payroll, "EMP-INS", "Employer insurance",
                 SalaryItemNature.EmployerContribution, Money.Create(23_000_000m, Currency)));
 
@@ -80,7 +81,7 @@ namespace ERP.Test.xUnit.Domain
         public void A_payroll_that_would_pay_a_negative_amount_is_refused()
         {
             var payroll = CreatePayroll();
-            payroll.AddItem(Earning(payroll, "BASE", 10_000_000m));
+            Earning(payroll, "BASE", 10_000_000m);
             payroll.AddItem(Deduction(payroll, "LOAN", 12_000_000m));
 
             Assert.Throws<InvalidOperationException>(payroll.Confirm);
@@ -90,12 +91,12 @@ namespace ERP.Test.xUnit.Domain
         public void Confirming_closes_the_slip_and_raises_an_event()
         {
             var payroll = CreatePayroll();
-            payroll.AddItem(Earning(payroll, "BASE", 100_000_000m));
+            Earning(payroll, "BASE", 100_000_000m);
             payroll.Confirm();
 
             Assert.Equal(PayrollStatus.Definite, payroll.Status);
             Assert.Contains(payroll.DomainEvents, e => e is PayrollFinalized);
-            Assert.Throws<InvalidOperationException>(() => payroll.AddItem(Earning(payroll, "EXTRA", 1m)));
+            Assert.Throws<InvalidOperationException>(() => Earning(payroll, "EXTRA", 1m));
         }
 
         [Fact]

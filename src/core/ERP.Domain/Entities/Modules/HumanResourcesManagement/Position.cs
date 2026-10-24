@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// A seat in the organization chart. Positions report to positions, so the chart survives
 /// the people who occupy them coming and going.
 /// </summary>
-public sealed class Position : BaseEntity
+public sealed class Position : AggregateRoot
 {
     public Department Department { get; private set; } = default!;
     public Guid DepartmentId { get; private set; }
@@ -26,7 +26,7 @@ public sealed class Position : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<Position> _subordinates = [];
-    public IReadOnlyList<Position> Subordinates => _subordinates;
+    public IReadOnlyList<Position> Subordinates => _subordinates.AsReadOnly();
 
     private Position() { }
 

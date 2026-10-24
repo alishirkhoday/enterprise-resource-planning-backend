@@ -3,7 +3,7 @@
 /// <summary>
 /// When a machine is next due for service, by time or by hours run.
 /// </summary>
-public sealed class MaintenanceSchedule : BaseEntity
+public sealed class MaintenanceSchedule : AggregateRoot
 {
     public Machine Machine { get; private set; } = default!;
     public DateTimeOffset ScheduledDate { get; private set; }

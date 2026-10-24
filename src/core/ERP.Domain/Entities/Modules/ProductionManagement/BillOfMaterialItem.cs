@@ -60,33 +60,33 @@ public sealed class BillOfMaterialItem : BaseEntity
         ScrapPercentage = Percentage.Zero();
     }
 
-    public void SetScrapPercentage(Percentage scrapPercentage)
+    internal void SetScrapPercentage(Percentage scrapPercentage)
     {
         ArgumentNullException.ThrowIfNull(scrapPercentage, nameof(scrapPercentage));
         ScrapPercentage = scrapPercentage;
     }
 
-    public void ConsumeAtOperation(int operationSequenceNumber)
+    internal void ConsumeAtOperation(int operationSequenceNumber)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(operationSequenceNumber, nameof(operationSequenceNumber));
         OperationSequenceNumber = operationSequenceNumber;
     }
 
-    public void MarkAsAlternative(string alternativeGroup)
+    internal void MarkAsAlternative(string alternativeGroup)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(alternativeGroup, nameof(alternativeGroup));
         AlternativeGroup = alternativeGroup.Trim();
         IsAlternative = true;
     }
 
-    public void MarkAsPrimary(string alternativeGroup)
+    internal void MarkAsPrimary(string alternativeGroup)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(alternativeGroup, nameof(alternativeGroup));
         AlternativeGroup = alternativeGroup.Trim();
         IsAlternative = false;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     /// <summary>How much to issue for a scale factor, including the expected scrap.</summary>
     public decimal RequiredQuantityFor(decimal factor)

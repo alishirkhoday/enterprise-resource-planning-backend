@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// Hours worked beyond the contracted schedule. Payroll multiplies them by the rate that
 /// applies to their <see cref="Type"/>.
 /// </summary>
-public sealed class Overtime : BaseEntity
+public sealed class Overtime : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// The pattern of hours an employee is expected to work. Attendance is judged against this,
 /// and overtime is whatever falls outside it.
 /// </summary>
-public sealed class WorkSchedule : BaseEntity
+public sealed partial class WorkSchedule : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public Guid? WorkCalendarId { get; private set; }
@@ -15,7 +15,7 @@ public sealed class WorkSchedule : BaseEntity
     public int LateToleranceMinutes { get; private set; }
 
     private readonly List<WorkScheduleDay> _days = [];
-    public IReadOnlyList<WorkScheduleDay> Days => _days;
+    public IReadOnlyList<WorkScheduleDay> Days => _days.AsReadOnly();
 
     private WorkSchedule() { }
 
@@ -40,7 +40,9 @@ public sealed class WorkSchedule : BaseEntity
 
     public void AddDay(WorkScheduleDay day)
     {
-        ArgumentNullException.ThrowIfNull(day, nameof(day));
+        ArgumentNullException.ThrowIfNull(day);
+        EnsureCanAddChild(day, day.ScheduleId, _days);
+
         if (_days.Any(d => d.DayOfWeek == day.DayOfWeek))
             throw new InvalidOperationException($"{day.DayOfWeek} is already defined in this schedule.");
         _days.Add(day);

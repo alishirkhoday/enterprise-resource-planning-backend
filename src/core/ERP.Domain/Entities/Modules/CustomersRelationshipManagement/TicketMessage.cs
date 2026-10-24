@@ -25,7 +25,7 @@ public sealed class TicketMessage : BaseEntity
     {
         ArgumentNullException.ThrowIfNull(ticket, nameof(ticket));
         ArgumentException.ThrowIfNullOrWhiteSpace(creatorId, nameof(creatorId));
-        ArgumentException.ThrowIfNullOrEmpty(message, nameof(message));
+        ArgumentException.ThrowIfNullOrWhiteSpace(message, nameof(message));
         Ticket = ticket;
         TicketId = ticket.Id;
         CreatorType = creatorType;

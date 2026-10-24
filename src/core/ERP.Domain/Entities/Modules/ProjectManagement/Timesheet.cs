@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProjectManagement;
 /// One employee record of how a period was spent. It is the single place hours are captured for
 /// payroll, for project costing and for billing the customer.
 /// </summary>
-public sealed class Timesheet : BaseEntity
+public sealed partial class Timesheet : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }
@@ -20,7 +20,7 @@ public sealed class Timesheet : BaseEntity
     public string? RejectionReason { get; private set; }
 
     private readonly List<TimesheetEntry> _entries = [];
-    public IReadOnlyList<TimesheetEntry> Entries => _entries;
+    public IReadOnlyList<TimesheetEntry> Entries => _entries.AsReadOnly();
 
     private Timesheet() { }
 
@@ -39,7 +39,9 @@ public sealed class Timesheet : BaseEntity
 
     public void AddEntry(TimesheetEntry entry)
     {
-        ArgumentNullException.ThrowIfNull(entry, nameof(entry));
+        ArgumentNullException.ThrowIfNull(entry);
+        EnsureCanAddChild(entry, entry.TimesheetId, _entries);
+
         EnsureEditable();
         if (!Period.Contains(entry.WorkDate))
             throw new InvalidOperationException($"{entry.WorkDate:yyyy/MM/dd} falls outside the timesheet period.");
@@ -53,6 +55,10 @@ public sealed class Timesheet : BaseEntity
 
     public void RemoveEntry(TimesheetEntry entry)
     {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (entry.TimesheetId != Id || !_entries.Contains(entry))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(entry, nameof(entry));
         EnsureEditable();
         _entries.Remove(entry);

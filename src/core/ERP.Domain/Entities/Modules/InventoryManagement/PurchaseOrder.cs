@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// A commitment to buy from a supplier at agreed prices. It is the document goods receipts and
 /// purchase invoices are both matched against.
 /// </summary>
-public sealed class PurchaseOrder : BaseEntity, IBranchScoped
+public sealed partial class PurchaseOrder : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -36,7 +36,7 @@ public sealed class PurchaseOrder : BaseEntity, IBranchScoped
     public string? CancellationReason { get; private set; }
 
     private readonly List<PurchaseOrderItem> _items = [];
-    public IReadOnlyList<PurchaseOrderItem> Items => _items;
+    public IReadOnlyList<PurchaseOrderItem> Items => _items.AsReadOnly();
 
     private PurchaseOrder() { }
 
@@ -98,7 +98,9 @@ public sealed class PurchaseOrder : BaseEntity, IBranchScoped
 
     public void AddItem(PurchaseOrderItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.PurchaseOrderId, _items);
+
         EnsureDraft();
         if (item.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Order lines must be priced in {CurrencyCode}.");
@@ -109,6 +111,10 @@ public sealed class PurchaseOrder : BaseEntity, IBranchScoped
 
     public void RemoveItem(PurchaseOrderItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.PurchaseOrderId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);

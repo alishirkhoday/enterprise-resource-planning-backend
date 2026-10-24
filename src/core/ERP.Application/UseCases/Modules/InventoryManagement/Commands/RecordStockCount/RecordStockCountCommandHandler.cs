@@ -36,9 +36,9 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.RecordSt
                 try
                 {
                     if (line.IsRecount)
-                        sheetLine.RecordRecount(line.CountedQuantity);
+                        count.RecordStockCountItemRecount(sheetLine.Id, line.CountedQuantity);
                     else
-                        sheetLine.RecordCount(line.CountedQuantity);
+                        count.RecordStockCountItemCount(sheetLine.Id, line.CountedQuantity);
                 }
                 catch (InvalidOperationException exception)
                 {
@@ -46,7 +46,7 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.RecordSt
                 }
 
                 if (!string.IsNullOrWhiteSpace(line.DiscrepancyReason))
-                    sheetLine.ExplainDiscrepancy(line.DiscrepancyReason);
+                    count.ExplainStockCountItemDiscrepancy(sheetLine.Id, line.DiscrepancyReason);
             }
 
             // Submitted only once every line has been counted, which is what the flag asks for.

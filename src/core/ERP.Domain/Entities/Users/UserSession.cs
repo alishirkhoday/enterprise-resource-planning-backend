@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a user session. Useful for global logout, device/session management and audit.
 /// </summary>
-public sealed class UserSession : BaseEntity
+public sealed class UserSession : AggregateRoot
 {
     public User User { get; private set; } = default!;
     public Guid UserId { get; private set; }
@@ -21,7 +21,7 @@ public sealed class UserSession : BaseEntity
     public UserSession(User user, string ipAddress, string? userAgent = null, string? deviceName = null, string? operatingSystem = null, DateTimeOffset? expiresAt = null)
     {
         ArgumentNullException.ThrowIfNull(user, nameof(user));
-        ArgumentException.ThrowIfNullOrEmpty(ipAddress, nameof(ipAddress));
+        ArgumentException.ThrowIfNullOrWhiteSpace(ipAddress, nameof(ipAddress));
         User = user;
         UserId = user.Id;
         InternetProtocolAddress = ipAddress.Trim();

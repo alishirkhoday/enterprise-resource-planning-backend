@@ -73,11 +73,11 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.CreateSt
                     inventory.OnHandQuantity,
                     inventory.Item.BaseUnitOfMeasureId.Value,
                     inventory.AverageUnitCost);
+                count.AddItem(line);
 
                 if (inventory.StorageLocationId is not null)
-                    line.ScopeToStorageLocation(inventory.StorageLocationId.Value);
+                    count.ScopeStockCountItemToStorageLocation(line.Id, inventory.StorageLocationId.Value);
 
-                count.AddItem(line);
             }
 
             try

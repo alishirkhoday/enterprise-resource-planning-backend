@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// An instruction to make a quantity of an item. It ties the bill of materials and the routing
 /// together, and collects the material, labour and overhead that end up in the unit cost.
 /// </summary>
-public sealed class ProductionOrder : BaseEntity, IBranchScoped
+public sealed partial class ProductionOrder : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
 
@@ -52,7 +52,7 @@ public sealed class ProductionOrder : BaseEntity, IBranchScoped
     public string? CancellationReason { get; private set; }
 
     private readonly List<ProductionTask> _tasks = [];
-    public IReadOnlyList<ProductionTask> Tasks => _tasks;
+    public IReadOnlyList<ProductionTask> Tasks => _tasks.AsReadOnly();
 
     private ProductionOrder() { }
 
@@ -120,7 +120,9 @@ public sealed class ProductionOrder : BaseEntity, IBranchScoped
 
     public void AddTask(ProductionTask task)
     {
-        ArgumentNullException.ThrowIfNull(task, nameof(task));
+        ArgumentNullException.ThrowIfNull(task);
+        EnsureCanAddChild(task, task.OrderId, _tasks);
+
         if (Status is ProductionOrderStatus.Completed or ProductionOrderStatus.Cancelled)
             throw new InvalidOperationException($"Tasks cannot be added to a {Status} order.");
         _tasks.Add(task);
@@ -153,9 +155,12 @@ public sealed class ProductionOrder : BaseEntity, IBranchScoped
         ArgumentNullException.ThrowIfNull(material, nameof(material));
         ArgumentNullException.ThrowIfNull(labour, nameof(labour));
         ArgumentNullException.ThrowIfNull(overhead, nameof(overhead));
-        MaterialCost = MaterialCost.Add(material);
-        LabourCost = LabourCost.Add(labour);
-        OverheadCost = OverheadCost.Add(overhead);
+        var materialCost = MaterialCost.Add(material);
+        var labourCost = LabourCost.Add(labour);
+        var overheadCost = OverheadCost.Add(overhead);
+        MaterialCost = materialCost;
+        LabourCost = labourCost;
+        OverheadCost = overheadCost;
     }
 
     public void Complete()

@@ -15,24 +15,17 @@ public sealed class Image : ValueObject
 
     public Image(string fileName, string filePath, string alt)
     {
-        ArgumentException.ThrowIfNullOrEmpty(fileName, nameof(fileName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName, nameof(fileName));
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
-        ArgumentException.ThrowIfNullOrEmpty(alt, nameof(alt));
-        FileName = fileName;
-        FilePath = filePath;
-        Alt = alt;
+        ArgumentException.ThrowIfNullOrWhiteSpace(alt, nameof(alt));
+        FileName = fileName.Trim();
+        FilePath = filePath.Trim();
+        Alt = alt.Trim();
     }
 
     public static Image Create(string fileName, string filePath, string alt)
     {
         return new Image(fileName, filePath, alt);
-    }
-
-    public void Delete()
-    {
-        FileName = string.Empty;
-        FilePath = string.Empty;
-        Alt = string.Empty;
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

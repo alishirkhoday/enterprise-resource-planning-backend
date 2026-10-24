@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Branches;
 /// A place the organization operates from. Documents, stock and people are all scoped to one,
 /// which is what lets a group run several sites out of one database.
 /// </summary>
-public sealed class Branch : BaseEntity
+public sealed class Branch : AggregateRoot
 {
     public Organization Organization { get; private set; } = default!;
     public Guid OrganizationId { get; private set; }
@@ -45,7 +45,7 @@ public sealed class Branch : BaseEntity
         Code = code.Trim();
         Name = name.Trim();
         Type = type;
-        Address = address;
+        Address = address.Copy();
         IsActive = true;
     }
 
@@ -55,7 +55,7 @@ public sealed class Branch : BaseEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Name = name.Trim();
         Type = type;
-        Address = address;
+        Address = address.Copy();
     }
 
     public void SetContactInformation(string? telephone, string? email)

@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Security;
 /// <summary>
 /// A named bundle of permissions that users are assigned to.
 /// </summary>
-public sealed class Role : BaseEntity
+public sealed class Role : AggregateRoot
 {
     public string Title { get; private set; } = default!;
     public string NormalizedTitle { get; private set; } = default!;
@@ -15,12 +15,12 @@ public sealed class Role : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<RolePermission> _rolePermissions = [];
-    public IReadOnlyList<RolePermission> RolePermissions => _rolePermissions;
+    public IReadOnlyList<RolePermission> RolePermissions => _rolePermissions.AsReadOnly();
 
     public IEnumerable<Permission> Permissions => _rolePermissions.Select(rp => rp.Permission);
 
     private readonly List<UserRole> _userRoles = [];
-    public IReadOnlyList<UserRole> UserRoles => _userRoles;
+    public IReadOnlyList<UserRole> UserRoles => _userRoles.AsReadOnly();
 
     private Role() { }
 

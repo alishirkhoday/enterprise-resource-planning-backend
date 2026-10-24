@@ -125,11 +125,11 @@ namespace ERP.Application.UseCases.Modules.OrderManagement.Commands.PlaceOrder
         private static ShipToAddress BuildShipToAddress(PlaceOrderAddressDto dto)
         {
             var address = new Address(dto.Country, dto.Province, dto.City, dto.Region, dto.Street, dto.Plaque, dto.PostalCode);
-            address.SetGeographyReferences(dto.CountryId, dto.ProvinceId, dto.CityId);
-            address.SetUnit(dto.Unit);
+            address = address.WithGeographyReferences(dto.CountryId, dto.ProvinceId, dto.CityId);
+            address = address.WithUnit(dto.Unit);
 
             var shipTo = new ShipToAddress(address, dto.ReceiverFullName, dto.ReceiverMobileNumber);
-            shipTo.SetDeliveryInstruction(dto.DeliveryInstruction);
+            shipTo = shipTo.WithDeliveryInstruction(dto.DeliveryInstruction);
 
             return shipTo;
         }

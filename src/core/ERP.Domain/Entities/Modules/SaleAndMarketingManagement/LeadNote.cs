@@ -16,7 +16,7 @@ public sealed class LeadNote : BaseEntity
     public LeadNote(Lead lead, string note)
     {
         ArgumentNullException.ThrowIfNull(lead, nameof(lead));
-        ArgumentException.ThrowIfNullOrEmpty(note, nameof(note));
+        ArgumentException.ThrowIfNullOrWhiteSpace(note, nameof(note));
         Lead = lead;
         Note = note;
     }

@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// A commitment to sell to a customer at agreed prices. Stock is reserved against it, and
 /// deliveries and invoices are both matched back to it.
 /// </summary>
-public sealed class SaleOrder : BaseEntity, IBranchScoped
+public sealed partial class SaleOrder : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -35,7 +35,7 @@ public sealed class SaleOrder : BaseEntity, IBranchScoped
     public string? CancellationReason { get; private set; }
 
     private readonly List<SaleOrderItem> _items = [];
-    public IReadOnlyList<SaleOrderItem> Items => _items;
+    public IReadOnlyList<SaleOrderItem> Items => _items.AsReadOnly();
 
     private SaleOrder() { }
 
@@ -88,7 +88,9 @@ public sealed class SaleOrder : BaseEntity, IBranchScoped
 
     public void AddItem(SaleOrderItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.SaleOrderId, _items);
+
         EnsureDraft();
         if (item.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Order lines must be priced in {CurrencyCode}.");
@@ -99,6 +101,10 @@ public sealed class SaleOrder : BaseEntity, IBranchScoped
 
     public void RemoveItem(SaleOrderItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.SaleOrderId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);

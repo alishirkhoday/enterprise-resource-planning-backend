@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// Generates the human facing numbers of business documents, so every document type has one
 /// place that owns its format instead of each handler inventing its own.
 /// </summary>
-public sealed class NumberingSeries : BaseEntity, IBranchScoped
+public sealed class NumberingSeries : AggregateRoot, IBranchScoped
 {
     /// <summary>Identifies what is numbered, for example SalesInvoice or PurchaseOrder.</summary>
     public string Key { get; private set; } = default!;

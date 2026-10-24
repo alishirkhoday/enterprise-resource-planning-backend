@@ -35,13 +35,13 @@ public sealed class HumanDocument : BaseEntity
         Title = title.Trim();
     }
 
-    public void SetIdentification(string? documentNumber, string? issuingAuthority)
+    internal void SetIdentification(string? documentNumber, string? issuingAuthority)
     {
         DocumentNumber = string.IsNullOrWhiteSpace(documentNumber) ? null : documentNumber.Trim();
         IssuingAuthority = string.IsNullOrWhiteSpace(issuingAuthority) ? null : issuingAuthority.Trim();
     }
 
-    public void SetValidity(DateOnly? issueDate, DateOnly? expiryDate)
+    internal void SetValidity(DateOnly? issueDate, DateOnly? expiryDate)
     {
         if (issueDate.HasValue && expiryDate.HasValue && expiryDate.Value < issueDate.Value)
             throw new ArgumentOutOfRangeException(nameof(expiryDate), "ExpiryDate cannot be earlier than IssueDate.");
@@ -49,11 +49,11 @@ public sealed class HumanDocument : BaseEntity
         ExpiryDate = expiryDate;
     }
 
-    public void AttachFile(Guid attachmentId) => AttachmentId = attachmentId == Guid.Empty ? null : attachmentId;
+    internal void AttachFile(Guid attachmentId) => AttachmentId = attachmentId == Guid.Empty ? null : attachmentId;
 
-    public void MarkAsVerified() => IsVerified = true;
+    internal void MarkAsVerified() => IsVerified = true;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public bool IsExpiredOn(DateOnly date) => ExpiryDate.HasValue && ExpiryDate.Value < date;
 

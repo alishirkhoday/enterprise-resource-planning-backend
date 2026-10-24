@@ -36,7 +36,7 @@ public sealed class ProductionTask : BaseEntity
     public string? Notes { get; private set; }
 
     private readonly List<TaskAssignment> _assignments = [];
-    public IReadOnlyList<TaskAssignment> Assignments => _assignments;
+    public IReadOnlyList<TaskAssignment> Assignments => _assignments.AsReadOnly();
 
     private ProductionTask() { }
 
@@ -59,7 +59,7 @@ public sealed class ProductionTask : BaseEntity
         PlannedHours = plannedHours;
     }
 
-    public void Schedule(DateTimeOffset plannedStartTime, DateTimeOffset plannedEndTime)
+    internal void Schedule(DateTimeOffset plannedStartTime, DateTimeOffset plannedEndTime)
     {
         if (plannedEndTime <= plannedStartTime)
             throw new ArgumentOutOfRangeException(nameof(plannedEndTime), "The end must come after the start.");
@@ -67,24 +67,26 @@ public sealed class ProductionTask : BaseEntity
         PlannedEndTime = plannedEndTime;
     }
 
-    public void LinkToRoutingOperation(Guid routingOperationId) =>
+    internal void LinkToRoutingOperation(Guid routingOperationId) =>
         RoutingOperationId = routingOperationId == Guid.Empty ? null : routingOperationId;
 
-    public void AssignResources(Guid? workStationId, Guid? machineId)
+    internal void AssignResources(Guid? workStationId, Guid? machineId)
     {
         WorkStationId = workStationId == Guid.Empty ? null : workStationId;
         MachineId = machineId == Guid.Empty ? null : machineId;
     }
 
-    public void AddAssignment(TaskAssignment assignment)
+    internal void AddAssignment(TaskAssignment assignment)
     {
-        ArgumentNullException.ThrowIfNull(assignment, nameof(assignment));
+        ArgumentNullException.ThrowIfNull(assignment);
+        EnsureCanAddChild(assignment, assignment.TaskId, _assignments);
+
         if (Status is ProductionTaskStatus.Completed or ProductionTaskStatus.Cancelled)
             throw new InvalidOperationException($"People cannot be assigned to a {Status} task.");
         _assignments.Add(assignment);
     }
 
-    public void Start()
+    internal void Start()
     {
         if (Status != ProductionTaskStatus.Pending)
             throw new InvalidOperationException($"A task in state {Status} cannot be started.");
@@ -92,7 +94,7 @@ public sealed class ProductionTask : BaseEntity
         Status = ProductionTaskStatus.InProgress;
     }
 
-    public void RecordProgress(decimal completedQuantity, decimal scrappedQuantity = 0m)
+    internal void RecordProgress(decimal completedQuantity, decimal scrappedQuantity = 0m)
     {
         if (Status != ProductionTaskStatus.InProgress)
             throw new InvalidOperationException("Progress can only be recorded while the task is in progress.");
@@ -105,13 +107,13 @@ public sealed class ProductionTask : BaseEntity
         ScrappedQuantity += scrappedQuantity;
     }
 
-    public void RecordHours(decimal hours)
+    internal void RecordHours(decimal hours)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hours, nameof(hours));
         ActualHours += hours;
     }
 
-    public void Pause(string reason)
+    internal void Pause(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status != ProductionTaskStatus.InProgress)
@@ -120,14 +122,14 @@ public sealed class ProductionTask : BaseEntity
         Notes = reason.Trim();
     }
 
-    public void Resume()
+    internal void Resume()
     {
         if (Status != ProductionTaskStatus.Paused)
             throw new InvalidOperationException("Only a paused task can be resumed.");
         Status = ProductionTaskStatus.InProgress;
     }
 
-    public void Complete()
+    internal void Complete()
     {
         if (Status is not (ProductionTaskStatus.InProgress or ProductionTaskStatus.Paused))
             throw new InvalidOperationException($"A task in state {Status} cannot be completed.");
@@ -135,7 +137,7 @@ public sealed class ProductionTask : BaseEntity
         Status = ProductionTaskStatus.Completed;
     }
 
-    public void Cancel(string reason)
+    internal void Cancel(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status == ProductionTaskStatus.Completed)
@@ -144,7 +146,7 @@ public sealed class ProductionTask : BaseEntity
         Notes = reason.Trim();
     }
 
-    public void SetNotes(string? notes) => Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+    internal void SetNotes(string? notes) => Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
 
     /// <summary>Actual hours against planned, which is the efficiency of the step.</summary>
     public decimal? EfficiencyPercentage =>

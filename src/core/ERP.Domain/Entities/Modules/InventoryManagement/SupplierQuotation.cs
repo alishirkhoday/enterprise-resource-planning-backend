@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// One supplier answer to a request for quotation. Accepting it is what a purchase order is
 /// normally built from.
 /// </summary>
-public sealed class SupplierQuotation : BaseEntity
+public sealed partial class SupplierQuotation : AggregateRoot
 {
     public string Number { get; private set; } = default!;
 
@@ -30,7 +30,7 @@ public sealed class SupplierQuotation : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<SupplierQuotationItem> _items = [];
-    public IReadOnlyList<SupplierQuotationItem> Items => _items;
+    public IReadOnlyList<SupplierQuotationItem> Items => _items.AsReadOnly();
 
     private SupplierQuotation() { }
 
@@ -83,7 +83,9 @@ public sealed class SupplierQuotation : BaseEntity
 
     public void AddItem(SupplierQuotationItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.QuotationId, _items);
+
         EnsureOpen();
         if (item.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Quotation lines must be priced in {CurrencyCode}.");

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// A periodic assessment of an employee. The score is expected to come from the goals in the
 /// same period rather than being set arbitrarily.
 /// </summary>
-public sealed class HumanPerformanceReview : BaseEntity
+public sealed class HumanPerformanceReview : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }
@@ -28,7 +28,7 @@ public sealed class HumanPerformanceReview : BaseEntity
     public DateOnly? AcknowledgedOn { get; private set; }
 
     private readonly List<PerformanceGoal> _goals = [];
-    public IReadOnlyList<PerformanceGoal> Goals => _goals;
+    public IReadOnlyList<PerformanceGoal> Goals => _goals.AsReadOnly();
 
     private HumanPerformanceReview() { }
 

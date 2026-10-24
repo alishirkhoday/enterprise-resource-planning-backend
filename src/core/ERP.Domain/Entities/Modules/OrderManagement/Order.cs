@@ -7,7 +7,7 @@ namespace ERP.Domain.Entities.Modules.OrderManagement;
 /// A retail order placed by a customer, paid for up front and shipped to an address captured at
 /// the moment it was placed.
 /// </summary>
-public sealed class Order : BaseEntity, IBranchScoped
+public sealed partial class Order : AggregateRoot, IBranchScoped
 {
     public Customer Customer { get; private set; } = default!;
     public Guid CustomerId { get; private set; }
@@ -31,13 +31,13 @@ public sealed class Order : BaseEntity, IBranchScoped
     public string? CancellationReason { get; private set; }
 
     private readonly List<OrderItem> _items = [];
-    public IReadOnlyList<OrderItem> Items => _items;
+    public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
 
     private readonly List<Payment> _payments = [];
-    public IReadOnlyList<Payment> Payments => _payments;
+    public IReadOnlyList<Payment> Payments => _payments.AsReadOnly();
 
     private readonly List<OrderShipmentStatusHistory> _shipmentStatusHistories = [];
-    public IReadOnlyList<OrderShipmentStatusHistory> ShipmentStatusHistories => _shipmentStatusHistories;
+    public IReadOnlyList<OrderShipmentStatusHistory> ShipmentStatusHistories => _shipmentStatusHistories.AsReadOnly();
 
     public Money TotalAmount => Sum(_items.Select(i => i.Amount));
     public Money TotalDiscounts => Sum(_items.Select(i => i.Discount)).Add(DiscountCodeAmount);
@@ -61,7 +61,7 @@ public sealed class Order : BaseEntity, IBranchScoped
     public Order(Customer customer, string code, string currencyCode)
     {
         ArgumentNullException.ThrowIfNull(customer, nameof(customer));
-        ArgumentException.ThrowIfNullOrEmpty(code, nameof(code));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
         ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode, nameof(currencyCode));
         if (!customer.CanBeSoldTo)
             throw new InvalidOperationException($"Customer {customer.DisplayName} is {customer.Status}.");
@@ -82,20 +82,28 @@ public sealed class Order : BaseEntity, IBranchScoped
         TimeLeftToPayment = RegistrationDateTime.AddMinutes(timeLeftToPayment);
     }
 
-    public void SetItems(List<OrderItem> items)
+    public void SetItems(IEnumerable<OrderItem> items)
     {
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
+        ArgumentNullException.ThrowIfNull(items);
         EnsurePending();
-        _items.Clear();
+        var replacement = new List<OrderItem>();
         foreach (var item in items)
         {
-            AddItem(item);
+            ArgumentNullException.ThrowIfNull(item);
+            EnsureCanAddChild(item, item.OrderId, replacement);
+            if (item.ItemUnitPrice.CurrencyCode != CurrencyCode)
+                throw new InvalidOperationException($"Lines must be priced in {CurrencyCode}.");
+            replacement.Add(item);
         }
+        _items.Clear();
+        _items.AddRange(replacement);
     }
 
     public void AddItem(OrderItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.OrderId, _items);
+
         EnsurePending();
         if (item.ItemUnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Order lines must be priced in {CurrencyCode}.");
@@ -106,7 +114,7 @@ public sealed class Order : BaseEntity, IBranchScoped
     {
         ArgumentNullException.ThrowIfNull(shipToAddress, nameof(shipToAddress));
         EnsurePending();
-        ShipToAddress = shipToAddress;
+        ShipToAddress = shipToAddress.Copy();
     }
 
     public void SetShippingCost(Money shippingCost)
@@ -150,7 +158,9 @@ public sealed class Order : BaseEntity, IBranchScoped
 
     public void AddPayment(Payment payment)
     {
-        ArgumentNullException.ThrowIfNull(payment, nameof(payment));
+        ArgumentNullException.ThrowIfNull(payment);
+        EnsureCanAddChild(payment, payment.OrderId, _payments);
+
         if (Status is OrderStatus.Cancelled or OrderStatus.Completed)
             throw new InvalidOperationException($"A {Status} order cannot take payments.");
         _payments.Add(payment);

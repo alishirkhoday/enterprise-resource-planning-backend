@@ -102,10 +102,10 @@ namespace ERP.Application.UseCases.Modules.WarehouseManagement.Commands.ReceiveS
 
                 try
                 {
-                    line.Receive(resolved.Quantity);
+                    transfer.ReceiveStockTransferOrderItem(line.Id, resolved.Quantity);
 
                     if (resolved.DiscrepancyReason is not null)
-                        line.ExplainDiscrepancy(resolved.DiscrepancyReason);
+                        transfer.ExplainStockTransferOrderItemDiscrepancy(line.Id, resolved.DiscrepancyReason);
                 }
                 catch (InvalidOperationException exception)
                 {

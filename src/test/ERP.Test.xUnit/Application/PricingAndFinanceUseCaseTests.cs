@@ -237,6 +237,47 @@ namespace ERP.Test.xUnit.Application
             Assert.Equal("NoPriceForItem", result.Error.Code);
         }
 
+        [Fact]
+        public async Task Creating_prices_with_discount_tax_and_floor_uses_validated_detached_lines()
+        {
+            var item = CreateItem();
+            var harness = new PriceListHarness(item);
+            var request = PriceListCommand(item.Id) with
+            {
+                Lines = [new PriceListLineDto { ItemId = item.Id, UnitOfMeasureId = Unit, BasePrice = 500m,
+                    DiscountPercentage = 10m, TaxPercentage = 9m, MinimumPrice = 400m }]
+            };
+            var result = await harness.Build().Handle(request, Token);
+            Assert.True(result.IsSuccess);
+            Assert.Equal(450m, result.Value.Items[0].NetPrice);
+            Assert.Equal(490.5m, result.Value.Items[0].PriceWithTax);
+            Assert.Equal(400m, result.Value.Items[0].MinimumPrice);
+        }
+
+        [Fact]
+        public async Task A_duplicate_replacement_does_not_remove_any_existing_price()
+        {
+            var item = CreateItem();
+            var priceList = CreatePriceList();
+            var original = new PriceListItem(priceList, item, Unit, Money.Create(500m, "IRR"));
+            priceList.AddItem(original);
+            var repositories = new Mock<IPriceListRepository>();
+            repositories.Setup(r => r.GetWithItemsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(priceList);
+            var items = new Mock<IItemRepository>();
+            items.Setup(r => r.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>())).ReturnsAsync([item]);
+            var result = await new SetPriceListItemsCommandHandler(repositories.Object, items.Object).Handle(
+                new SetPriceListItemsCommand
+                {
+                    PriceListId = priceList.Id,
+                    ReplaceAll = true,
+                    Lines = [new PriceListLineDto { ItemId = item.Id, UnitOfMeasureId = Unit, BasePrice = 600m },
+                             new PriceListLineDto { ItemId = item.Id, UnitOfMeasureId = Unit, BasePrice = 700m }]
+                }, Token);
+            Assert.True(result.IsFailure);
+            Assert.Same(original, Assert.Single(priceList.Items));
+            repositories.Verify(r => r.UpdateAsync(It.IsAny<PriceList>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
         private static FixedAsset CreateAsset(decimal cost = 120_000_000m, int usefulLifeMonths = 60, bool inService = true)
         {
             var category = new AssetCategory("AC-1", "Machinery", DepreciationMethod.StraightLine, 60);
@@ -359,12 +400,13 @@ namespace ERP.Test.xUnit.Application
             var account = new Account("6101", "Stationery", AccountType.ExpenseOperating, AccountGroup.LevelFour, AccountBalance.Debtor, FinancialStatement.IncomeAndExpenseStatement, isFinal: true);
             var budget = new Budget(Guid.NewGuid(), "2026 operating", BudgetType.Operating, "IRR");
             var line = new BudgetLine(budget, account, 5, Money.Create(planned, "IRR"));
+            budget.AddLine(line);
 
             if (actual > 0m)
-                line.RecordActual(Money.Create(actual, "IRR"));
+                line.Budget.RecordBudgetLineActual(line.Id, Money.Create(actual, "IRR"));
 
             if (committed > 0m)
-                line.Commit(Money.Create(committed, "IRR"));
+                line.Budget.CommitBudgetLine(line.Id, Money.Create(committed, "IRR"));
 
             return line;
         }

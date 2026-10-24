@@ -27,12 +27,12 @@ public sealed class Holiday : BaseEntity
         IsOfficial = isOfficial;
     }
 
-    public void Update(string title, bool isOfficial)
+    internal void Update(string title, bool isOfficial)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         Title = title.Trim();
         IsOfficial = isOfficial;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// Finished goods moving from a production order into the warehouse, valued at the cost the
 /// order accumulated.
 /// </summary>
-public sealed class ProductionReceipt : BaseEntity
+public sealed class ProductionReceipt : AggregateRoot
 {
     public string Number { get; private set; } = default!;
 
@@ -39,7 +39,7 @@ public sealed class ProductionReceipt : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<Guid> _serialNumberIds = [];
-    public IReadOnlyList<Guid> SerialNumberIds => _serialNumberIds;
+    public IReadOnlyList<Guid> SerialNumberIds => _serialNumberIds.AsReadOnly();
 
     private ProductionReceipt() { }
 

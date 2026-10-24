@@ -4,7 +4,7 @@
 /// A record that a report was run, with a snapshot of what it returned. Kept so a figure
 /// somebody acted on can be produced again even after the underlying data has moved.
 /// </summary>
-public sealed class ReportExecution : BaseEntity
+public sealed class ReportExecution : AggregateRoot
 {
     public ReportTemplate Template { get; private set; } = default!;
     public DateTimeOffset ExecutionDateTime { get; private set; } = DateTimeOffset.UtcNow;

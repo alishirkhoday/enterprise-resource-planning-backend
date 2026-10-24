@@ -59,7 +59,7 @@ public sealed class TimesheetEntry : BaseEntity
         IsBillable = false;
     }
 
-    public void SetBillingRate(Money billingRate)
+    internal void SetBillingRate(Money billingRate)
     {
         ArgumentNullException.ThrowIfNull(billingRate, nameof(billingRate));
         if (billingRate.IsNegative)
@@ -67,11 +67,11 @@ public sealed class TimesheetEntry : BaseEntity
         BillingRate = billingRate;
     }
 
-    public void MarkAsNonBillable() => IsBillable = false;
+    internal void MarkAsNonBillable() => IsBillable = false;
 
-    public void AssignCostCenter(Guid costCenterId) => CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
+    internal void AssignCostCenter(Guid costCenterId) => CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     private static void EnsureValidHours(decimal hours)
     {

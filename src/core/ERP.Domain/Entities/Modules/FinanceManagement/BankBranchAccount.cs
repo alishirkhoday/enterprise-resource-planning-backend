@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// An account the business holds at a bank branch - حساب بانکی.
 /// </summary>
-public sealed class BankBranchAccount : BaseEntity, IBranchScoped
+public sealed partial class BankBranchAccount : AggregateRoot, IBranchScoped
 {
     public BankBranch BankBranch { get; private set; } = default!;
     public Guid BankBranchId { get; private set; }
@@ -26,7 +26,7 @@ public sealed class BankBranchAccount : BaseEntity, IBranchScoped
     public bool IsActive { get; private set; }
 
     private readonly List<BankTransaction> _transactions = [];
-    public IReadOnlyList<BankTransaction> Transactions => _transactions;
+    public IReadOnlyList<BankTransaction> Transactions => _transactions.AsReadOnly();
 
     private BankBranchAccount() { }
 
@@ -68,7 +68,9 @@ public sealed class BankBranchAccount : BaseEntity, IBranchScoped
 
     public void AddTransaction(BankTransaction transaction)
     {
-        ArgumentNullException.ThrowIfNull(transaction, nameof(transaction));
+        ArgumentNullException.ThrowIfNull(transaction);
+        EnsureCanAddChild(transaction, transaction.BankBranchAccountId, _transactions);
+
         if (!IsActive)
             throw new InvalidOperationException($"Bank account {AccountNumber} is closed.");
         _transactions.Add(transaction);

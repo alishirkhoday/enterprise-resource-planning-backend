@@ -58,9 +58,9 @@ public sealed class SupplierEvaluation : BaseEntity
         ServiceScore = serviceScore;
     }
 
-    public void SetEvaluator(Guid humanId) => EvaluatedByHumanId = humanId == Guid.Empty ? null : humanId;
+    internal void SetEvaluator(Guid humanId) => EvaluatedByHumanId = humanId == Guid.Empty ? null : humanId;
 
-    public void SetComment(string? comment) => Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
+    internal void SetComment(string? comment) => Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
 
     private static void EnsureInRange(int score, string parameterName)
     {

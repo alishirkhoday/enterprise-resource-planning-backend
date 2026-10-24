@@ -11,7 +11,7 @@ namespace ERP.Domain.Entities.Modules.AfterSalesServiceManagement;
 /// another date on the serial number.
 /// </para>
 /// </summary>
-public sealed class ServiceContract : BaseEntity, IBranchScoped
+public sealed partial class ServiceContract : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
     public string Title { get; private set; } = default!;
@@ -46,7 +46,7 @@ public sealed class ServiceContract : BaseEntity, IBranchScoped
     public string? Terms { get; private set; }
 
     private readonly List<ServiceContractCoverage> _coveredAssets = [];
-    public IReadOnlyList<ServiceContractCoverage> CoveredAssets => _coveredAssets;
+    public IReadOnlyList<ServiceContractCoverage> CoveredAssets => _coveredAssets.AsReadOnly();
 
     private ServiceContract() { }
 
@@ -107,7 +107,9 @@ public sealed class ServiceContract : BaseEntity, IBranchScoped
 
     public void Cover(ServiceContractCoverage coverage)
     {
-        ArgumentNullException.ThrowIfNull(coverage, nameof(coverage));
+        ArgumentNullException.ThrowIfNull(coverage);
+        EnsureCanAddChild(coverage, coverage.ContractId, _coveredAssets);
+
         EnsureDraft();
         if (_coveredAssets.Any(c => c.SerialNumberId == coverage.SerialNumberId && c.ItemId == coverage.ItemId))
             throw new InvalidOperationException("That asset is already covered by this contract.");

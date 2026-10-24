@@ -192,14 +192,14 @@ namespace ERP.Application.UseCases.Modules.ProductionManagement.Commands.IssueMa
                     line.Quantity,
                     plan.UnitOfMeasureId,
                     value.Divide(line.Quantity));
+                issue.AddItem(issueLine);
 
-                issueLine.SetTracking(line.ItemBatchId, line.SerialNumberId);
+                issue.SetMaterialIssueItemTracking(issueLine.Id, line.ItemBatchId, line.SerialNumberId);
 
                 if (storageLocationId is not null)
-                    issueLine.ScopeToStorageLocation(storageLocationId.Value);
+                    issue.ScopeMaterialIssueItemToStorageLocation(issueLine.Id, storageLocationId.Value);
 
-                issueLine.SetDescription(line.Description);
-                issue.AddItem(issueLine);
+                issue.SetMaterialIssueItemDescription(issueLine.Id, line.Description);
 
                 var entry = new StockLedgerEntry(
                     component,

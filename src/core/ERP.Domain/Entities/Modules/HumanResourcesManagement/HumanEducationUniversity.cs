@@ -3,7 +3,7 @@
 /// <summary>
 /// Where a qualification was earned.
 /// </summary>
-public sealed class HumanEducationUniversity : BaseEntity
+public sealed class HumanEducationUniversity : AggregateRoot
 {
     public string Name { get; private set; } = default!;
 
@@ -11,13 +11,13 @@ public sealed class HumanEducationUniversity : BaseEntity
 
     public HumanEducationUniversity(string name)
     {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Name = name.Trim();
     }
 
     public void Update(string name)
     {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Name = name.Trim();
     }
 }

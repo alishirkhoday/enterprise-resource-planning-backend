@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// What is on hand of one item in one warehouse, and what it is worth. Holding it per warehouse
 /// is what makes it possible to answer where the stock actually is.
 /// </summary>
-public sealed class ItemInventory : BaseEntity
+public sealed class ItemInventory : AggregateRoot
 {
     public Item Item { get; private set; } = default!;
     public Guid ItemId { get; private set; }
@@ -93,8 +93,10 @@ public sealed class ItemInventory : BaseEntity
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         EnsureSameCurrency(cost);
 
-        OnHandQuantity += quantity;
-        TotalValue = TotalValue.Add(cost);
+        var onHandQuantity = OnHandQuantity + quantity;
+        var totalValue = TotalValue.Add(cost);
+        OnHandQuantity = onHandQuantity;
+        TotalValue = totalValue;
         LastUpdatedOnHandQuantity = DateTimeOffset.UtcNow;
     }
 
@@ -107,8 +109,10 @@ public sealed class ItemInventory : BaseEntity
         if (quantity > OnHandQuantity)
             throw new InvalidOperationException($"Insufficient inventory: {OnHandQuantity} on hand, {quantity} requested.");
 
-        OnHandQuantity -= quantity;
-        TotalValue = OnHandQuantity == 0m ? Money.Zero(TotalValue.CurrencyCode) : TotalValue.Subtract(cost);
+        var onHandQuantity = OnHandQuantity - quantity;
+        var totalValue = onHandQuantity == 0m ? Money.Zero(TotalValue.CurrencyCode) : TotalValue.Subtract(cost);
+        OnHandQuantity = onHandQuantity;
+        TotalValue = totalValue;
         LastUpdatedOnHandQuantity = DateTimeOffset.UtcNow;
 
         if (IsBelowMinimum)
@@ -179,8 +183,9 @@ public sealed class ItemInventory : BaseEntity
     {
         ArgumentOutOfRangeException.ThrowIfNegative(countedQuantity, nameof(countedQuantity));
         var unitCost = AverageUnitCost;
+        var totalValue = unitCost.Multiply(countedQuantity);
         OnHandQuantity = countedQuantity;
-        TotalValue = unitCost.Multiply(countedQuantity);
+        TotalValue = totalValue;
         LastCountedOn = countedOn;
         LastUpdatedOnHandQuantity = DateTimeOffset.UtcNow;
     }

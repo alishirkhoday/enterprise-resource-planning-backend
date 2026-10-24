@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// Someone the organization is considering hiring. A candidate exists independently of any one
 /// vacancy, so the same person can be tracked across several applications over time.
 /// </summary>
-public sealed class Candidate : BaseEntity
+public sealed class Candidate : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public string Family { get; private set; } = default!;
@@ -32,7 +32,7 @@ public sealed class Candidate : BaseEntity
     public string? Notes { get; private set; }
 
     private readonly List<JobApplication> _applications = [];
-    public IReadOnlyList<JobApplication> Applications => _applications;
+    public IReadOnlyList<JobApplication> Applications => _applications.AsReadOnly();
 
     private Candidate() { }
 
@@ -67,7 +67,7 @@ public sealed class Candidate : BaseEntity
     public void SetAddress(Address address)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
-        Address = address;
+        Address = address.Copy();
     }
 
     public void SetProfessionalBackground(string? currentJobTitle, decimal? yearsOfExperience, HumanEducationDegree? highestDegree)

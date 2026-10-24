@@ -47,5 +47,5 @@ public sealed class QualityMeasurement : BaseEntity
         IsWithinTolerance = isAcceptable;
     }
 
-    public void SetNotes(string? notes) => Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+    internal void SetNotes(string? notes) => Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
 }

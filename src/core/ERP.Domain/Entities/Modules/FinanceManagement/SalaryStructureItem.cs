@@ -53,7 +53,7 @@ public sealed class SalaryStructureItem : BaseEntity
         CalculationOrder = calculationOrder;
     }
 
-    public void SetFixedAmount(Money amount)
+    internal void SetFixedAmount(Money amount)
     {
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         if (Calculation != SalaryItemCalculation.FixedAmount)
@@ -63,7 +63,7 @@ public sealed class SalaryStructureItem : BaseEntity
         FixedAmount = amount;
     }
 
-    public void SetRate(Percentage rate, string? baseItemCode = null)
+    internal void SetRate(Percentage rate, string? baseItemCode = null)
     {
         ArgumentNullException.ThrowIfNull(rate, nameof(rate));
         if (Calculation is not (SalaryItemCalculation.PercentageOfBase or SalaryItemCalculation.PercentageOfItem))
@@ -74,15 +74,15 @@ public sealed class SalaryStructureItem : BaseEntity
         BaseItemCode = string.IsNullOrWhiteSpace(baseItemCode) ? null : baseItemCode.Trim();
     }
 
-    public void SetTaxTreatment(bool isTaxable, bool isInsurable)
+    internal void SetTaxTreatment(bool isTaxable, bool isInsurable)
     {
         IsTaxable = isTaxable;
         IsInsurable = isInsurable;
     }
 
-    public void LinkAccount(Guid accountId) => AccountId = accountId == Guid.Empty ? null : accountId;
+    internal void LinkAccount(Guid accountId) => AccountId = accountId == Guid.Empty ? null : accountId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     /// <summary>
     /// Computes the item against a base amount. Items calculated per day or per hour are left to

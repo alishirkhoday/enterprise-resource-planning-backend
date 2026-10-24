@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// A named bonus that can be granted on a pay slip, either as a set sum or as a share of pay.
 /// </summary>
-public sealed class Reward : BaseEntity
+public sealed class Reward : AggregateRoot
 {
     public string Title { get; private set; } = default!;
     public SalaryItemCalculation Calculation { get; private set; }
@@ -18,13 +18,13 @@ public sealed class Reward : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<PayrollReward> _bonuses = [];
-    public IReadOnlyList<PayrollReward> Bonuses => _bonuses;
+    public IReadOnlyList<PayrollReward> Bonuses => _bonuses.AsReadOnly();
 
     private Reward() { }
 
     public Reward(string title, Money amount)
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         if (!amount.IsPositive)
             throw new ArgumentOutOfRangeException(nameof(amount), "A reward must be a positive amount.");
@@ -37,7 +37,7 @@ public sealed class Reward : BaseEntity
 
     public Reward(string title, Percentage rate)
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(rate, nameof(rate));
         Title = title.Trim();
         Rate = rate;
@@ -48,7 +48,7 @@ public sealed class Reward : BaseEntity
 
     public void Update(string title, Money amount)
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         if (!amount.IsPositive)
             throw new ArgumentOutOfRangeException(nameof(amount), "A reward must be a positive amount.");

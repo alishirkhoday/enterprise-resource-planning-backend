@@ -40,7 +40,7 @@ public sealed class AccountingPeriod : BaseEntity
         Status = AccountingPeriodStatus.Open;
     }
 
-    public void Close(string? closedBy = null)
+    internal void Close(string? closedBy = null)
     {
         if (Status == AccountingPeriodStatus.Closed)
             throw new InvalidOperationException($"Period {Title} is already closed.");
@@ -51,7 +51,7 @@ public sealed class AccountingPeriod : BaseEntity
     }
 
     /// <summary>Reopens a closed period, which auditors expect to be a deliberate and rare act.</summary>
-    public void Reopen(string? reopenedBy = null)
+    internal void Reopen(string? reopenedBy = null)
     {
         if (Status != AccountingPeriodStatus.Closed)
             throw new InvalidOperationException($"Period {Title} is not closed.");
@@ -63,14 +63,14 @@ public sealed class AccountingPeriod : BaseEntity
     }
 
     /// <summary>Allows reading but refuses new postings, used while a period is being reviewed.</summary>
-    public void Lock()
+    internal void Lock()
     {
         if (Status == AccountingPeriodStatus.Closed)
             throw new InvalidOperationException("A closed period is already beyond locking.");
         Status = AccountingPeriodStatus.Locked;
     }
 
-    public void Unlock()
+    internal void Unlock()
     {
         if (Status != AccountingPeriodStatus.Locked)
             throw new InvalidOperationException($"Period {Title} is not locked.");

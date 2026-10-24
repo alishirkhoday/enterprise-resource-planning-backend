@@ -30,10 +30,10 @@ public sealed class ItemBarcode : BaseEntity
         Symbology = symbology;
     }
 
-    public void SetUnitOfMeasure(Guid unitOfMeasureId) => UnitOfMeasureId = unitOfMeasureId == Guid.Empty ? null : unitOfMeasureId;
+    internal void SetUnitOfMeasure(Guid unitOfMeasureId) => UnitOfMeasureId = unitOfMeasureId == Guid.Empty ? null : unitOfMeasureId;
 
-    public void MarkAsPrimary() => IsPrimary = true;
-    public void UnmarkAsPrimary() => IsPrimary = false;
+    internal void MarkAsPrimary() => IsPrimary = true;
+    internal void UnmarkAsPrimary() => IsPrimary = false;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

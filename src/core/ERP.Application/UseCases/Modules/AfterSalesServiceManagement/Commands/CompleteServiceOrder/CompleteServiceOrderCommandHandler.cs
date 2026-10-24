@@ -97,9 +97,9 @@ namespace ERP.Application.UseCases.Modules.AfterSalesServiceManagement.Commands.
                     part.Quantity,
                     Money.Create(part.UnitPrice, order.CurrencyCode),
                     part.UnitOfMeasureId);
-
-                line.SetTracking(part.ItemBatchId, part.SerialNumberId);
                 order.AddPart(line);
+
+                order.SetServiceOrderPartTracking(line.Id, part.ItemBatchId, part.SerialNumberId);
             }
 
             return Result.Success<bool, Error>(true);

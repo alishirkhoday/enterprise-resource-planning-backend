@@ -65,9 +65,9 @@ namespace ERP.Application.UseCases.Modules.CorrespondenceManagement.Commands.Reg
             foreach (var recipient in request.Recipients)
             {
                 var addressee = new LetterRecipient(letter, recipient.Kind, recipient.Name);
-                addressee.SetContactDetails(recipient.Organization, recipient.PostalAddress, recipient.Email);
-                addressee.IdentifyInternally(recipient.UserId, recipient.HumanId);
                 letter.AddRecipient(addressee);
+                letter.SetLetterRecipientContactDetails(addressee.Id, recipient.Organization, recipient.PostalAddress, recipient.Email);
+                letter.IdentifyInternallyLetterRecipient(addressee.Id, recipient.UserId, recipient.HumanId);
             }
 
             await letters.CreateAsync(letter, cancellationToken);

@@ -3,7 +3,7 @@
 /// <summary>
 /// Defects found in a run - گزارش ضایعات. What a process improvement is argued from.
 /// </summary>
-public sealed class ProductionDefectReport : BaseEntity
+public sealed class ProductionDefectReport : AggregateRoot
 {
     public ProductionTask Task { get; private set; } = default!;
     public string DefectType { get; private set; } = default!;

@@ -25,7 +25,7 @@ public sealed class OrderShipmentStatusHistory : BaseEntity
         ChangedDateTime = DateTimeOffset.UtcNow;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void SetChangedBy(Guid userId) => ChangedByUserId = userId == Guid.Empty ? null : userId;
+    internal void SetChangedBy(Guid userId) => ChangedByUserId = userId == Guid.Empty ? null : userId;
 }

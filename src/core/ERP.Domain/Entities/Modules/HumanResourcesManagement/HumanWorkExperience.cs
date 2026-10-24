@@ -23,6 +23,7 @@ public sealed class HumanWorkExperience : BaseEntity
         ArgumentNullException.ThrowIfNull(human, nameof(human));
         ArgumentNullException.ThrowIfNull(company, nameof(company));
         ArgumentNullException.ThrowIfNull(job, nameof(job));
+        ValidateDates(startDate, endDate);
         Human = human;
         HumanId = human.Id;
         Company = company;
@@ -33,10 +34,11 @@ public sealed class HumanWorkExperience : BaseEntity
         EndDate = endDate;
     }
 
-    public void Update(Company company, Job job, DateOnly startDate, DateOnly? endDate = null)
+    internal void Update(Company company, Job job, DateOnly startDate, DateOnly? endDate = null)
     {
         ArgumentNullException.ThrowIfNull(company, nameof(company));
         ArgumentNullException.ThrowIfNull(job, nameof(job));
+        ValidateDates(startDate, endDate);
         Company = company;
         CompanyId = company.Id;
         Job = job;
@@ -45,5 +47,10 @@ public sealed class HumanWorkExperience : BaseEntity
         EndDate = endDate;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
+    private static void ValidateDates(DateOnly startDate, DateOnly? endDate)
+    {
+        if (endDate < startDate)
+            throw new ArgumentOutOfRangeException(nameof(endDate), "The end date cannot precede the start date.");
+    }
 }

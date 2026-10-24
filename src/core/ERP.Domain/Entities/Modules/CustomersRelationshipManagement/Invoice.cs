@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.CustomersRelationshipManagement;
 /// A bill issued to a customer. Posting it is what creates the receivable and the output tax;
 /// a draft commits to nothing.
 /// </summary>
-public sealed class Invoice : BaseEntity, IBranchScoped
+public sealed partial class Invoice : AggregateRoot, IBranchScoped
 {
     public Customer Customer { get; private set; } = default!;
     public Guid CustomerId { get; private set; }
@@ -42,14 +42,14 @@ public sealed class Invoice : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<InvoiceItem> _items = [];
-    public IReadOnlyList<InvoiceItem> Items => _items;
+    public IReadOnlyList<InvoiceItem> Items => _items.AsReadOnly();
 
     private Invoice() { }
 
     public Invoice(Customer customer, string number, InvoiceType type, DateOnly issueDate, DateOnly dueDate, string currencyCode)
     {
         ArgumentNullException.ThrowIfNull(customer, nameof(customer));
-        ArgumentException.ThrowIfNullOrEmpty(number, nameof(number));
+        ArgumentException.ThrowIfNullOrWhiteSpace(number, nameof(number));
         ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode, nameof(currencyCode));
         if (dueDate < issueDate)
             throw new ArgumentOutOfRangeException(nameof(dueDate), "The due date cannot precede the issue date.");
@@ -117,7 +117,9 @@ public sealed class Invoice : BaseEntity, IBranchScoped
 
     public void AddItem(InvoiceItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.InvoiceId, _items);
+
         EnsureDraft();
         if (item.ItemUnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Invoice lines must be priced in {CurrencyCode}.");
@@ -126,6 +128,10 @@ public sealed class Invoice : BaseEntity, IBranchScoped
 
     public void RemoveItem(InvoiceItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.InvoiceId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);
@@ -159,12 +165,21 @@ public sealed class Invoice : BaseEntity, IBranchScoped
 
     public Money AmountPayable => TaxableAmount.Add(TotalTax).Add(AdditionalCharges);
 
-    public void SetItems(List<InvoiceItem> items)
+    public void SetItems(IEnumerable<InvoiceItem> items)
     {
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
+        ArgumentNullException.ThrowIfNull(items);
         EnsureDraft();
+        var replacement = new List<InvoiceItem>();
+        foreach (var item in items)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            EnsureCanAddChild(item, item.InvoiceId, replacement);
+            if (item.ItemUnitPrice.CurrencyCode != CurrencyCode)
+                throw new InvalidOperationException($"Lines must be priced in {CurrencyCode}.");
+            replacement.Add(item);
+        }
         _items.Clear();
-        items.ForEach(AddItem);
+        _items.AddRange(replacement);
     }
 
     public void Issue()

@@ -50,14 +50,14 @@ public sealed class PurchaseContractItem : BaseEntity
         UnitOfMeasureId = unitOfMeasureId;
     }
 
-    public void SetCommittedQuantity(decimal? committedQuantity)
+    internal void SetCommittedQuantity(decimal? committedQuantity)
     {
         if (committedQuantity.HasValue)
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(committedQuantity.Value, nameof(committedQuantity));
         CommittedQuantity = committedQuantity;
     }
 
-    public void SetOrderingRules(decimal minimumOrderQuantity, int? leadTimeDays)
+    internal void SetOrderingRules(decimal minimumOrderQuantity, int? leadTimeDays)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(minimumOrderQuantity, nameof(minimumOrderQuantity));
         if (leadTimeDays.HasValue)
@@ -66,16 +66,16 @@ public sealed class PurchaseContractItem : BaseEntity
         LeadTimeDays = leadTimeDays;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void RecordConsumption(decimal quantity)
+    internal void RecordConsumption(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         ConsumedQuantity += quantity;
     }
 
     /// <summary>Called when the contract is renewed and the volume promise starts again.</summary>
-    public void ResetConsumption() => ConsumedQuantity = 0m;
+    internal void ResetConsumption() => ConsumedQuantity = 0m;
 
     public decimal? RemainingQuantity => CommittedQuantity - ConsumedQuantity;
 

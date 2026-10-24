@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A tax the organization charges or withholds, at a rate that is valid for a period. Rates are
 /// versioned rather than overwritten, so an old invoice can still be explained.
 /// </summary>
-public sealed class Tax : BaseEntity
+public sealed class Tax : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Title { get; private set; } = default!;

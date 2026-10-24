@@ -12,7 +12,7 @@ namespace ERP.Domain.Entities.Modules.AfterSalesServiceManagement;
 /// expiry for a failure a week before it is still a valid claim.
 /// </para>
 /// </summary>
-public sealed class WarrantyClaim : BaseEntity, IBranchScoped
+public sealed class WarrantyClaim : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 

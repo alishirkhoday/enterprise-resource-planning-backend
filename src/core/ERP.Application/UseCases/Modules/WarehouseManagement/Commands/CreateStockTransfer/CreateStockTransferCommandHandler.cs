@@ -61,11 +61,6 @@ namespace ERP.Application.UseCases.Modules.WarehouseManagement.Commands.CreateSt
             if (lines.IsFailure)
                 return Result.Failure<StockTransferDto, Error>(lines.Error);
 
-            foreach (var line in lines.Value)
-            {
-                transfer.AddItem(line);
-            }
-
             await transfers.CreateAsync(transfer, cancellationToken);
 
             return Result.Success<StockTransferDto, Error>(transfer.ToDto());
@@ -105,13 +100,14 @@ namespace ERP.Application.UseCases.Modules.WarehouseManagement.Commands.CreateSt
                     : inventory.AverageUnitCost;
 
                 var transferLine = new StockTransferOrderItem(transfer, item, lineNumber++, line.Quantity, line.UnitOfMeasureId, unitCost);
+                transfer.AddItem(transferLine);
+                built.Add(transferLine);
 
                 if (line.ItemBatchId is not null)
-                    transferLine.SetBatch(line.ItemBatchId.Value);
+                    transfer.SetStockTransferOrderItemBatch(transferLine.Id, line.ItemBatchId.Value);
 
-                transferLine.SetStorageLocations(line.SourceStorageLocationId, line.DestinationStorageLocationId);
+                transfer.SetStockTransferOrderItemStorageLocations(transferLine.Id, line.SourceStorageLocationId, line.DestinationStorageLocationId);
 
-                built.Add(transferLine);
             }
 
             return Result.Success<List<StockTransferOrderItem>, Error>(built);

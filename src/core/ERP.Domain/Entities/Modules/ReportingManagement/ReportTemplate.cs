@@ -7,7 +7,7 @@
 /// query string would be remote code execution against the database however it was labelled;
 /// running these belongs to a reporting service with its own read-only credentials.
 /// </summary>
-public sealed class ReportTemplate : BaseEntity
+public sealed class ReportTemplate : AggregateRoot
 {
     public string Name { get; private set; } = default!; // نام گزارش
     public string Description { get; private set; } = default!; // توضیح گزارش
@@ -16,7 +16,7 @@ public sealed class ReportTemplate : BaseEntity
     public string OutputFormat { get; private set; } = "Table"; // نوع خروجی (Table, Chart, Pivot, Export)
 
     private readonly List<ReportFilterDefinition> _filters = new();
-    public IReadOnlyList<ReportFilterDefinition> Filters => _filters;
+    public IReadOnlyList<ReportFilterDefinition> Filters => _filters.AsReadOnly();
 
     // Required by Entity Framework to materialise the entity.
     private ReportTemplate() { }
@@ -30,5 +30,11 @@ public sealed class ReportTemplate : BaseEntity
         OutputFormat = outputFormat;
     }
 
-    public void AddFilter(ReportFilterDefinition filter) => _filters.Add(filter);
+    public void AddFilter(ReportFilterDefinition filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        EnsureCanAddChild(filter, filter.Template.Id, _filters);
+
+        _filters.Add(filter);
+    }
 }

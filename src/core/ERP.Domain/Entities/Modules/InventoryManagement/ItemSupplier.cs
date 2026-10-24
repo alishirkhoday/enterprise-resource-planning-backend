@@ -51,10 +51,10 @@ public sealed class ItemSupplier : BaseEntity
         IsActive = true;
     }
 
-    public void SetSupplierItemCode(string? supplierItemCode) =>
+    internal void SetSupplierItemCode(string? supplierItemCode) =>
         SupplierItemCode = string.IsNullOrWhiteSpace(supplierItemCode) ? null : supplierItemCode.Trim();
 
-    public void RecordPurchase(Money price, DateOnly purchaseDate)
+    internal void RecordPurchase(Money price, DateOnly purchaseDate)
     {
         ArgumentNullException.ThrowIfNull(price, nameof(price));
         if (price.IsNegative)
@@ -63,7 +63,7 @@ public sealed class ItemSupplier : BaseEntity
         LastPurchaseDate = purchaseDate;
     }
 
-    public void SetOrderingRules(decimal? minimumOrderQuantity, decimal? orderMultiple, int? leadTimeDays)
+    internal void SetOrderingRules(decimal? minimumOrderQuantity, decimal? orderMultiple, int? leadTimeDays)
     {
         if (minimumOrderQuantity.HasValue)
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minimumOrderQuantity.Value, nameof(minimumOrderQuantity));
@@ -77,13 +77,13 @@ public sealed class ItemSupplier : BaseEntity
         LeadTimeDays = leadTimeDays;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void SetPreferred() => IsPreferred = true;
-    public void UnsetPreferred() => IsPreferred = false;
+    internal void SetPreferred() => IsPreferred = true;
+    internal void UnsetPreferred() => IsPreferred = false;
 
-    public void Activate() => IsActive = true;
-    public void Deactivate() => IsActive = false;
+    internal void Activate() => IsActive = true;
+    internal void Deactivate() => IsActive = false;
 
     /// <summary>Rounds a wanted quantity up to what the supplier will actually accept.</summary>
     public decimal NormalizeOrderQuantity(decimal wantedQuantity)

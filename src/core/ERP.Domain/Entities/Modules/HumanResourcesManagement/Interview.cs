@@ -36,18 +36,18 @@ public sealed class Interview : BaseEntity
         DurationMinutes = durationMinutes;
     }
 
-    public void SetLocation(string? location) => Location = string.IsNullOrWhiteSpace(location) ? null : location.Trim();
+    internal void SetLocation(string? location) => Location = string.IsNullOrWhiteSpace(location) ? null : location.Trim();
 
-    public void AssignInterviewer(Guid humanId) => InterviewerHumanId = humanId == Guid.Empty ? null : humanId;
+    internal void AssignInterviewer(Guid humanId) => InterviewerHumanId = humanId == Guid.Empty ? null : humanId;
 
-    public void Reschedule(DateTimeOffset scheduledFor)
+    internal void Reschedule(DateTimeOffset scheduledFor)
     {
         if (Result is not null)
             throw new InvalidOperationException("A completed interview cannot be rescheduled.");
         ScheduledFor = scheduledFor;
     }
 
-    public void RecordResult(InterviewResult result, int? score, string? feedback)
+    internal void RecordResult(InterviewResult result, int? score, string? feedback)
     {
         if (score.HasValue && (score.Value < 0 || score.Value > 100))
             throw new ArgumentOutOfRangeException(nameof(score), "Score must be between 0 and 100.");

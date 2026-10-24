@@ -40,21 +40,21 @@ public sealed class Refund : BaseEntity
         Status = RefundStatus.Requested;
     }
 
-    public void LinkToReturnRequest(Guid returnRequestId) =>
+    internal void LinkToReturnRequest(Guid returnRequestId) =>
         ReturnRequestId = returnRequestId == Guid.Empty ? null : returnRequestId;
 
-    public void SetRequester(Guid userId) => RequestedByUserId = userId == Guid.Empty ? null : userId;
+    internal void SetRequester(Guid userId) => RequestedByUserId = userId == Guid.Empty ? null : userId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void Approve()
+    internal void Approve()
     {
         if (Status != RefundStatus.Requested)
             throw new InvalidOperationException($"A refund in state {Status} cannot be approved.");
         Status = RefundStatus.Approved;
     }
 
-    public void MarkAsProcessed(string transactionId, Guid? settlementId = null)
+    internal void MarkAsProcessed(string transactionId, Guid? settlementId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(transactionId, nameof(transactionId));
         if (Status != RefundStatus.Approved)
@@ -66,7 +66,7 @@ public sealed class Refund : BaseEntity
         Raise(new RefundProcessed(Id, PaymentId, Amount.Amount, Amount.CurrencyCode));
     }
 
-    public void Reject(string reason)
+    internal void Reject(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status == RefundStatus.Processed)

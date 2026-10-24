@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// How much leave of one kind an employee has for one year, and how much of it is already gone.
 /// Without this a leave request cannot be validated against a balance.
 /// </summary>
-public sealed class LeaveEntitlement : BaseEntity
+public sealed class LeaveEntitlement : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }

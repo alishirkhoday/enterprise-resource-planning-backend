@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// The rate to convert one currency into another on a given date. Rates are kept as history
 /// rather than overwritten, so past documents can always be revalued with the rate that applied then.
 /// </summary>
-public sealed class ExchangeRate : BaseEntity
+public sealed class ExchangeRate : AggregateRoot
 {
     public Currency FromCurrency { get; private set; } = default!;
     public Guid FromCurrencyId { get; private set; }

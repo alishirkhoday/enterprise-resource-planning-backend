@@ -35,11 +35,11 @@ public sealed class MissionExpense : BaseEntity
         SpentOn = spentOn;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void AttachReceipt(Guid attachmentId) => AttachmentId = attachmentId == Guid.Empty ? null : attachmentId;
+    internal void AttachReceipt(Guid attachmentId) => AttachmentId = attachmentId == Guid.Empty ? null : attachmentId;
 
-    public void MarkAsReimbursed(DateOnly reimbursedOn)
+    internal void MarkAsReimbursed(DateOnly reimbursedOn)
     {
         IsReimbursed = true;
         ReimbursedOn = reimbursedOn;

@@ -53,7 +53,7 @@ public sealed class ProjectTask : BaseEntity
         IsBillable = true;
     }
 
-    public void Update(string title, DateRange plannedPeriod, decimal estimatedHours)
+    internal void Update(string title, DateRange plannedPeriod, decimal estimatedHours)
     {
         ArgumentNullException.ThrowIfNull(plannedPeriod, nameof(plannedPeriod));
         ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
@@ -63,22 +63,22 @@ public sealed class ProjectTask : BaseEntity
         EstimatedHours = estimatedHours;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void SetPriority(ProjectTaskPriority priority) => Priority = priority;
+    internal void SetPriority(ProjectTaskPriority priority) => Priority = priority;
 
-    public void AssignTo(Guid humanId) => AssignedToHumanId = humanId == Guid.Empty ? null : humanId;
+    internal void AssignTo(Guid humanId) => AssignedToHumanId = humanId == Guid.Empty ? null : humanId;
 
-    public void DependOn(Guid taskId)
+    internal void DependOn(Guid taskId)
     {
         if (taskId == Id)
             throw new InvalidOperationException("A task cannot depend on itself.");
         DependsOnTaskId = taskId == Guid.Empty ? null : taskId;
     }
 
-    public void MarkAsNonBillable() => IsBillable = false;
+    internal void MarkAsNonBillable() => IsBillable = false;
 
-    public void Start(DateOnly actualStartDate)
+    internal void Start(DateOnly actualStartDate)
     {
         if (Status != ProjectTaskStatus.NotStarted)
             throw new InvalidOperationException($"A task in state {Status} cannot be started.");
@@ -86,13 +86,13 @@ public sealed class ProjectTask : BaseEntity
         Status = ProjectTaskStatus.InProgress;
     }
 
-    public void RecordHours(decimal hours)
+    internal void RecordHours(decimal hours)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hours, nameof(hours));
         ActualHours += hours;
     }
 
-    public void ReportProgress(Percentage progressPercentage)
+    internal void ReportProgress(Percentage progressPercentage)
     {
         ArgumentNullException.ThrowIfNull(progressPercentage, nameof(progressPercentage));
         if (Status is ProjectTaskStatus.Completed or ProjectTaskStatus.Cancelled)
@@ -101,7 +101,7 @@ public sealed class ProjectTask : BaseEntity
         Phase.RecalculateProgress();
     }
 
-    public void Block(string reason)
+    internal void Block(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status != ProjectTaskStatus.InProgress)
@@ -110,14 +110,14 @@ public sealed class ProjectTask : BaseEntity
         Description = reason.Trim();
     }
 
-    public void Unblock()
+    internal void Unblock()
     {
         if (Status != ProjectTaskStatus.Blocked)
             throw new InvalidOperationException("Only a blocked task can be unblocked.");
         Status = ProjectTaskStatus.InProgress;
     }
 
-    public void Complete(DateOnly actualEndDate)
+    internal void Complete(DateOnly actualEndDate)
     {
         if (Status is not (ProjectTaskStatus.InProgress or ProjectTaskStatus.Blocked))
             throw new InvalidOperationException($"A task in state {Status} cannot be completed.");
@@ -127,7 +127,7 @@ public sealed class ProjectTask : BaseEntity
         Phase.RecalculateProgress();
     }
 
-    public void Cancel(string reason)
+    internal void Cancel(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status == ProjectTaskStatus.Completed)

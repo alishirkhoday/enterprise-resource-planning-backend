@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// What the organization plans to spend or earn in a financial year, broken down by line.
 /// Once approved it becomes the yardstick that actuals are compared against.
 /// </summary>
-public sealed class Budget : BaseEntity, IBranchScoped
+public sealed partial class Budget : AggregateRoot, IBranchScoped
 {
     public Guid FinancialYearId { get; private set; }
     public string Title { get; private set; } = default!;
@@ -22,7 +22,7 @@ public sealed class Budget : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<BudgetLine> _lines = [];
-    public IReadOnlyList<BudgetLine> Lines => _lines;
+    public IReadOnlyList<BudgetLine> Lines => _lines.AsReadOnly();
 
     private Budget() { }
 
@@ -61,7 +61,9 @@ public sealed class Budget : BaseEntity, IBranchScoped
 
     public void AddLine(BudgetLine line)
     {
-        ArgumentNullException.ThrowIfNull(line, nameof(line));
+        ArgumentNullException.ThrowIfNull(line);
+        EnsureCanAddChild(line, line.BudgetId, _lines);
+
         EnsureDraft();
         if (line.PlannedAmount.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Budget lines must be expressed in {CurrencyCode}.");
@@ -72,6 +74,10 @@ public sealed class Budget : BaseEntity, IBranchScoped
 
     public void RemoveLine(BudgetLine line)
     {
+        ArgumentNullException.ThrowIfNull(line);
+        if (line.BudgetId != Id || !_lines.Contains(line))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(line, nameof(line));
         EnsureDraft();
         _lines.Remove(line);

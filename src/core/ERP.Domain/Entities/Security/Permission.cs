@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Security;
 /// A single thing a user is allowed to do. Permissions are granted through roles, never directly,
 /// so revoking a role revokes everything it carried.
 /// </summary>
-public sealed class Permission : BaseEntity
+public sealed class Permission : AggregateRoot
 {
     /// <summary>Stable machine key, for example Finance.Account.Create.</summary>
     public string Key { get; private set; } = default!;
@@ -23,7 +23,7 @@ public sealed class Permission : BaseEntity
     public bool IsSystematic { get; private set; }
 
     private readonly List<RolePermission> _rolePermissions = [];
-    public IReadOnlyList<RolePermission> RolePermissions => _rolePermissions;
+    public IReadOnlyList<RolePermission> RolePermissions => _rolePermissions.AsReadOnly();
 
     private Permission() { }
 

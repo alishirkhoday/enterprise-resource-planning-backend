@@ -3,7 +3,7 @@
 /// <summary>
 /// A working shift - شیفت. What attendance, capacity and output are all measured against.
 /// </summary>
-public sealed class Shift : BaseEntity
+public sealed class Shift : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public TimeSpan StartTime { get; private set; }

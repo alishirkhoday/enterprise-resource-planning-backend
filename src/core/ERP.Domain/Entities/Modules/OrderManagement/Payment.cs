@@ -31,7 +31,7 @@ public sealed class Payment : BaseEntity
     public Guid? WalletId { get; private set; }
 
     private readonly List<Refund> _refunds = [];
-    public IReadOnlyList<Refund> Refunds => _refunds;
+    public IReadOnlyList<Refund> Refunds => _refunds.AsReadOnly();
 
     private Payment() { }
 
@@ -52,24 +52,24 @@ public sealed class Payment : BaseEntity
         Status = PaymentStatus.Pending;
     }
 
-    public void SetGatewayInformation(PaymentGatewayInformation information)
+    internal void SetGatewayInformation(PaymentGatewayInformation information)
     {
         ArgumentNullException.ThrowIfNull(information, nameof(information));
         PaymentGatewayInformation = information;
     }
 
-    public void SetAuthority(string authorityCode)
+    internal void SetAuthority(string authorityCode)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(authorityCode, nameof(authorityCode));
         AuthorityCode = authorityCode.Trim();
     }
 
-    public void LinkToInstallmentPlan(Guid installmentPlanId) =>
+    internal void LinkToInstallmentPlan(Guid installmentPlanId) =>
         InstallmentPlanId = installmentPlanId == Guid.Empty ? null : installmentPlanId;
 
-    public void LinkToWallet(Guid walletId) => WalletId = walletId == Guid.Empty ? null : walletId;
+    internal void LinkToWallet(Guid walletId) => WalletId = walletId == Guid.Empty ? null : walletId;
 
-    public void MarkAsSucceeded(Money amountPaid, string transactionId)
+    internal void MarkAsSucceeded(Money amountPaid, string transactionId)
     {
         ArgumentNullException.ThrowIfNull(amountPaid, nameof(amountPaid));
         ArgumentException.ThrowIfNullOrWhiteSpace(transactionId, nameof(transactionId));
@@ -78,6 +78,8 @@ public sealed class Payment : BaseEntity
         if (amountPaid.CurrencyCode != Amount.CurrencyCode)
             throw new ArgumentException($"The amount must be expressed in {Amount.CurrencyCode}.", nameof(amountPaid));
 
+        if (!amountPaid.IsPositive)
+            throw new ArgumentOutOfRangeException(nameof(amountPaid), "The amount paid must be positive.");
         AmountPaid = amountPaid;
         TransactionId = transactionId.Trim();
         PaymentDateTime = DateTimeOffset.UtcNow;
@@ -86,7 +88,7 @@ public sealed class Payment : BaseEntity
         Raise(new PaymentSucceeded(Id, OrderId, amountPaid.Amount, amountPaid.CurrencyCode));
     }
 
-    public void MarkAsFailed(string reason)
+    internal void MarkAsFailed(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status != PaymentStatus.Pending)
@@ -96,18 +98,21 @@ public sealed class Payment : BaseEntity
         Raise(new PaymentFailed(Id, OrderId, FailureReason));
     }
 
-    public void LinkToSettlement(Guid settlementId) => SettlementId = settlementId == Guid.Empty ? null : settlementId;
+    internal void LinkToSettlement(Guid settlementId) => SettlementId = settlementId == Guid.Empty ? null : settlementId;
 
-    public void AddRefund(Refund refund)
+    internal void AddRefund(Refund refund)
     {
-        ArgumentNullException.ThrowIfNull(refund, nameof(refund));
-        if (Status != PaymentStatus.Succeeded)
-            throw new InvalidOperationException("Only a successful payment can be refunded.");
+        ArgumentNullException.ThrowIfNull(refund);
+        EnsureCanAddChild(refund, refund.PaymentId, _refunds);
+
+        if (!IsRefundable)
+            throw new InvalidOperationException("Only a successful payment with a remaining balance can be refunded.");
         if (refund.Amount.Amount > RefundableAmount.Amount)
             throw new InvalidOperationException($"Only {RefundableAmount} is still refundable.");
 
+        var refundedAmount = RefundedAmount.Add(refund.Amount);
         _refunds.Add(refund);
-        RefundedAmount = RefundedAmount.Add(refund.Amount);
+        RefundedAmount = refundedAmount;
         Status = RefundedAmount.Amount >= (AmountPaid?.Amount ?? 0m)
             ? PaymentStatus.Refunded
             : PaymentStatus.PartiallyRefunded;

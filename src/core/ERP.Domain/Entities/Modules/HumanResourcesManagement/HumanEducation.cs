@@ -22,6 +22,7 @@ public sealed class HumanEducation : BaseEntity
         ArgumentNullException.ThrowIfNull(human, nameof(human));
         ArgumentNullException.ThrowIfNull(fieldOfStudy, nameof(fieldOfStudy));
         ArgumentNullException.ThrowIfNull(university, nameof(university));
+        ValidateDates(startDate, graduationDate);
         Human = human;
         HumanId = human.Id;
         FieldOfStudy = fieldOfStudy;
@@ -33,10 +34,11 @@ public sealed class HumanEducation : BaseEntity
         GraduationDate = graduationDate;
     }
 
-    public void Update(HumanEducationFieldOfStudy fieldOfStudy, HumanEducationUniversity university, HumanEducationDegree degree, DateOnly startDate, DateOnly? graduationDate = null)
+    internal void Update(HumanEducationFieldOfStudy fieldOfStudy, HumanEducationUniversity university, HumanEducationDegree degree, DateOnly startDate, DateOnly? graduationDate = null)
     {
         ArgumentNullException.ThrowIfNull(fieldOfStudy, nameof(fieldOfStudy));
         ArgumentNullException.ThrowIfNull(university, nameof(university));
+        ValidateDates(startDate, graduationDate);
         FieldOfStudy = fieldOfStudy;
         FieldOfStudyId = fieldOfStudy.Id;
         University = university;
@@ -46,5 +48,14 @@ public sealed class HumanEducation : BaseEntity
         GraduationDate = graduationDate;
     }
 
-    public void SetGraduationDate(DateOnly graduationDate) => GraduationDate = graduationDate;
+    internal void SetGraduationDate(DateOnly graduationDate)
+    {
+        ValidateDates(StartDate, graduationDate);
+        GraduationDate = graduationDate;
+    }
+    private static void ValidateDates(DateOnly startDate, DateOnly? graduationDate)
+    {
+        if (graduationDate < startDate)
+            throw new ArgumentOutOfRangeException(nameof(graduationDate), "The end date cannot precede the start date.");
+    }
 }

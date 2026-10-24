@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// A class of fixed assets that share a depreciation policy and the same ledger accounts.
 /// </summary>
-public sealed class AssetCategory : BaseEntity
+public sealed class AssetCategory : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;

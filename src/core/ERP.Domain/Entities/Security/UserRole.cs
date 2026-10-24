@@ -39,16 +39,16 @@ public sealed class UserRole : BaseEntity
         ExpiresOn = expiresOn;
     }
 
-    public void SetAssignedBy(string? assignedBy) => AssignedBy = assignedBy;
+    internal void SetAssignedBy(string? assignedBy) => AssignedBy = assignedBy;
 
-    public void Extend(DateTimeOffset expiresOn)
+    internal void Extend(DateTimeOffset expiresOn)
     {
         if (expiresOn <= DateTimeOffset.UtcNow)
             throw new ArgumentOutOfRangeException(nameof(expiresOn), "ExpiresOn must be in the future.");
         ExpiresOn = expiresOn;
     }
 
-    public void MakePermanent() => ExpiresOn = null;
+    internal void MakePermanent() => ExpiresOn = null;
 
     public bool IsCurrentlyEffective => !IsDeleted && (ExpiresOn is null || ExpiresOn.Value > DateTimeOffset.UtcNow);
 }

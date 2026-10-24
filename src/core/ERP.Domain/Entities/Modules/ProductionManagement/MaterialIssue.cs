@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// Material moving from the warehouse into a production order. This is the link that was missing
 /// between production and inventory: without it, making something consumes nothing.
 /// </summary>
-public sealed class MaterialIssue : BaseEntity
+public sealed partial class MaterialIssue : AggregateRoot
 {
     public string Number { get; private set; } = default!;
 
@@ -24,7 +24,7 @@ public sealed class MaterialIssue : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<MaterialIssueItem> _items = [];
-    public IReadOnlyList<MaterialIssueItem> Items => _items;
+    public IReadOnlyList<MaterialIssueItem> Items => _items.AsReadOnly();
 
     private MaterialIssue() { }
 
@@ -59,7 +59,9 @@ public sealed class MaterialIssue : BaseEntity
 
     public void AddItem(MaterialIssueItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.IssueId, _items);
+
         EnsureDraft();
         if (item.UnitCost.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Issue lines must be valued in {CurrencyCode}.");

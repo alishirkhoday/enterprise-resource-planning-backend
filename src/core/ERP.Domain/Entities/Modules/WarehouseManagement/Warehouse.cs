@@ -4,7 +4,7 @@
 /// A place stock is held - انبار. Every quantity in the system is a quantity somewhere, which
 /// is why almost nothing about inventory can be asked without naming one.
 /// </summary>
-public sealed class Warehouse : BaseEntity
+public sealed partial class Warehouse : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -25,7 +25,7 @@ public sealed class Warehouse : BaseEntity
         Code = code.Trim();
         Name = name.Trim();
         Type = type;
-        Address = address;
+        Address = address.Copy();
         Description = description;
     }
 
@@ -37,14 +37,16 @@ public sealed class Warehouse : BaseEntity
         Code = code.Trim();
         Name = name.Trim();
         Type = type;
-        Address = address;
+        Address = address.Copy();
     }
 
     public void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
 
     public void AddStorageLocation(WarehouseStorageLocation storageLocation)
     {
-        ArgumentNullException.ThrowIfNull(storageLocation, nameof(storageLocation));
+        ArgumentNullException.ThrowIfNull(storageLocation);
+        EnsureCanAddChild(storageLocation, storageLocation.WarehouseId, _storageLocations);
+
 
         if (_storageLocations.Any(l => l.Code.Equals(storageLocation.Code, StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException($"Storage location with code '{storageLocation.Code}' already exists in this warehouse.", nameof(storageLocation));
@@ -54,6 +56,10 @@ public sealed class Warehouse : BaseEntity
 
     public void RemoveStorageLocation(WarehouseStorageLocation storageLocation)
     {
+        ArgumentNullException.ThrowIfNull(storageLocation);
+        if (storageLocation.WarehouseId != Id || !_storageLocations.Contains(storageLocation))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(storageLocation, nameof(storageLocation));
         _storageLocations.Remove(storageLocation);
     }

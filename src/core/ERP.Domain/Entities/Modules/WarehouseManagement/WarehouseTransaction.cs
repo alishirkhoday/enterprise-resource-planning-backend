@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.WarehouseManagement;
 /// A receipt into, an issue out of, or a move between storage locations. Confirming it is what
 /// writes the inventory ledger; a draft moves nothing.
 /// </summary>
-public sealed class WarehouseTransaction : BaseEntity, IBranchScoped
+public sealed partial class WarehouseTransaction : AggregateRoot, IBranchScoped
 {
     public string? Number { get; private set; }
 
@@ -48,7 +48,7 @@ public sealed class WarehouseTransaction : BaseEntity, IBranchScoped
     {
         ArgumentNullException.ThrowIfNull(sourceLocation, nameof(sourceLocation));
         ArgumentNullException.ThrowIfNull(destinationLocation, nameof(destinationLocation));
-        ArgumentException.ThrowIfNullOrEmpty(description, nameof(description));
+        ArgumentException.ThrowIfNullOrWhiteSpace(description, nameof(description));
         ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode, nameof(currencyCode));
         if (sourceLocation.Id == destinationLocation.Id)
             throw new ArgumentException("The source and destination locations must differ.", nameof(destinationLocation));
@@ -87,7 +87,9 @@ public sealed class WarehouseTransaction : BaseEntity, IBranchScoped
 
     public void AddItem(WarehouseTransactionItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.TransactionId, _items);
+
         EnsureDraft();
         if (item.UnitCost.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Transaction lines must be valued in {CurrencyCode}.");
@@ -96,6 +98,10 @@ public sealed class WarehouseTransaction : BaseEntity, IBranchScoped
 
     public void RemoveItem(WarehouseTransactionItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.TransactionId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);
@@ -128,7 +134,7 @@ public sealed class WarehouseTransaction : BaseEntity, IBranchScoped
     public void SetDescription(string description)
     {
         EnsureDraft();
-        ArgumentException.ThrowIfNullOrEmpty(description, nameof(description));
+        ArgumentException.ThrowIfNullOrWhiteSpace(description, nameof(description));
         Description = description.Trim();
     }
 

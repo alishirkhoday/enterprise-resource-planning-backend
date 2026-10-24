@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.CustomersRelationshipManagement;
 /// A category tickets are filed under. Subjects nest, and each carries the service level that
 /// tickets under it inherit.
 /// </summary>
-public sealed class TicketSubject : BaseEntity
+public sealed class TicketSubject : AggregateRoot
 {
     public string Title { get; private set; } = default!;
     public string? Description { get; private set; }
@@ -13,7 +13,7 @@ public sealed class TicketSubject : BaseEntity
     public Guid? ParentId { get; private set; }
 
     private readonly List<TicketSubject> _children = [];
-    public IReadOnlyList<TicketSubject> Children => _children;
+    public IReadOnlyList<TicketSubject> Children => _children.AsReadOnly();
 
     /// <summary>Minutes within which a first response is promised.</summary>
     public int? ResponseMinutes { get; private set; }

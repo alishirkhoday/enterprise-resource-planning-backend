@@ -19,9 +19,9 @@ public sealed class LeadInteraction : BaseEntity
     public LeadInteraction(Lead customer, string subject, LeadInteractionType type, string note, string description)
     {
         ArgumentNullException.ThrowIfNull(customer, nameof(customer));
-        ArgumentException.ThrowIfNullOrEmpty(subject, nameof(subject));
-        ArgumentException.ThrowIfNullOrEmpty(note, nameof(note));
-        ArgumentException.ThrowIfNullOrEmpty(description, nameof(description));
+        ArgumentException.ThrowIfNullOrWhiteSpace(subject, nameof(subject));
+        ArgumentException.ThrowIfNullOrWhiteSpace(note, nameof(note));
+        ArgumentException.ThrowIfNullOrWhiteSpace(description, nameof(description));
         Lead = customer;
         Subject = subject;
         Type = type;

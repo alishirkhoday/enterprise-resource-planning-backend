@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// The working week and the holidays that apply to a branch or the whole organization.
 /// Attendance, leave entitlement and due date calculations all read from here.
 /// </summary>
-public sealed class WorkCalendar : BaseEntity, IBranchScoped
+public sealed partial class WorkCalendar : AggregateRoot, IBranchScoped
 {
     public string Name { get; private set; } = default!;
     public Guid? BranchId { get; private set; }
@@ -15,18 +15,16 @@ public sealed class WorkCalendar : BaseEntity, IBranchScoped
     public decimal DailyWorkingHours { get; private set; }
 
     private readonly List<DayOfWeek> _weekendDays = [];
-    public IReadOnlyList<DayOfWeek> WeekendDays => _weekendDays;
+    public IReadOnlyList<DayOfWeek> WeekendDays => _weekendDays.AsReadOnly();
 
     private readonly List<Holiday> _holidays = [];
-    public IReadOnlyList<Holiday> Holidays => _holidays;
+    public IReadOnlyList<Holiday> Holidays => _holidays.AsReadOnly();
 
     private WorkCalendar() { }
 
     public WorkCalendar(string name, decimal dailyWorkingHours = 8m)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dailyWorkingHours, nameof(dailyWorkingHours));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(dailyWorkingHours, 24m, nameof(dailyWorkingHours));
+        ValidateDetails(name, dailyWorkingHours);
         Name = name.Trim();
         DailyWorkingHours = dailyWorkingHours;
         IsActive = true;
@@ -34,8 +32,7 @@ public sealed class WorkCalendar : BaseEntity, IBranchScoped
 
     public void Update(string name, decimal dailyWorkingHours)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dailyWorkingHours, nameof(dailyWorkingHours));
+        ValidateDetails(name, dailyWorkingHours);
         Name = name.Trim();
         DailyWorkingHours = dailyWorkingHours;
     }
@@ -48,16 +45,18 @@ public sealed class WorkCalendar : BaseEntity, IBranchScoped
     public void SetWeekendDays(IEnumerable<DayOfWeek> days)
     {
         ArgumentNullException.ThrowIfNull(days, nameof(days));
+        var replacement = days.Distinct().ToArray();
+        if (replacement.Any(day => !Enum.IsDefined(day)))
+            throw new ArgumentException("Every weekend day must be a valid day of the week.", nameof(days));
         _weekendDays.Clear();
-        foreach (var day in days.Distinct())
-        {
-            _weekendDays.Add(day);
-        }
+        _weekendDays.AddRange(replacement);
     }
 
     public void AddHoliday(Holiday holiday)
     {
-        ArgumentNullException.ThrowIfNull(holiday, nameof(holiday));
+        ArgumentNullException.ThrowIfNull(holiday);
+        EnsureCanAddChild(holiday, holiday.CalendarId, _holidays);
+
         if (_holidays.Any(h => h.Date == holiday.Date))
             throw new InvalidOperationException($"A holiday is already registered on {holiday.Date:yyyy/MM/dd}.");
         _holidays.Add(holiday);
@@ -95,4 +94,10 @@ public sealed class WorkCalendar : BaseEntity, IBranchScoped
 
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+    private static void ValidateDetails(string name, decimal dailyWorkingHours)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dailyWorkingHours, nameof(dailyWorkingHours));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(dailyWorkingHours, 24m, nameof(dailyWorkingHours));
+    }
 }

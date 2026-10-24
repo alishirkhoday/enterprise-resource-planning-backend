@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// An internal request to buy something. It states the need; purchasing decides from whom and
 /// at what price.
 /// </summary>
-public sealed class PurchaseRequisition : BaseEntity, IBranchScoped
+public sealed partial class PurchaseRequisition : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
     public DateOnly RequestDate { get; private set; }
@@ -24,7 +24,7 @@ public sealed class PurchaseRequisition : BaseEntity, IBranchScoped
     public string? RejectionReason { get; private set; }
 
     private readonly List<PurchaseRequisitionItem> _items = [];
-    public IReadOnlyList<PurchaseRequisitionItem> Items => _items;
+    public IReadOnlyList<PurchaseRequisitionItem> Items => _items.AsReadOnly();
 
     private PurchaseRequisition() { }
 
@@ -65,13 +65,19 @@ public sealed class PurchaseRequisition : BaseEntity, IBranchScoped
 
     public void AddItem(PurchaseRequisitionItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.RequisitionId, _items);
+
         EnsureDraft();
         _items.Add(item);
     }
 
     public void RemoveItem(PurchaseRequisitionItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.RequisitionId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);

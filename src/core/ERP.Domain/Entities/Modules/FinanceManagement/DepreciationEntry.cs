@@ -41,13 +41,13 @@ public sealed class DepreciationEntry : BaseEntity
         BookValueAfter = asset.AcquisitionCost.Subtract(AccumulatedAfter);
     }
 
-    public void SetUnitsProduced(decimal units)
+    internal void SetUnitsProduced(decimal units)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(units, nameof(units));
         UnitsProduced = units;
     }
 
-    public void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
+    internal void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
 
-    public void LinkToAccountingPeriod(Guid accountingPeriodId) => AccountingPeriodId = accountingPeriodId == Guid.Empty ? null : accountingPeriodId;
+    internal void LinkToAccountingPeriod(Guid accountingPeriodId) => AccountingPeriodId = accountingPeriodId == Guid.Empty ? null : accountingPeriodId;
 }

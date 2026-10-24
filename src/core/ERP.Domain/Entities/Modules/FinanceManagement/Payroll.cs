@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// One employee pay for one period. Gross, deductions and net are all derived from the lines,
 /// so the slip can always be explained item by item.
 /// </summary>
-public sealed class Payroll : BaseEntity, IBranchScoped
+public sealed partial class Payroll : AggregateRoot, IBranchScoped
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }
@@ -35,13 +35,13 @@ public sealed class Payroll : BaseEntity, IBranchScoped
     public Guid? DocumentId { get; private set; }
 
     private readonly List<PayrollItem> _items = [];
-    public IReadOnlyList<PayrollItem> Items => _items;
+    public IReadOnlyList<PayrollItem> Items => _items.AsReadOnly();
 
     private readonly List<PayrollReward> _rewards = [];
-    public IReadOnlyList<PayrollReward> Rewards => _rewards;
+    public IReadOnlyList<PayrollReward> Rewards => _rewards.AsReadOnly();
 
     private readonly List<PayrollDeduction> _deductions = [];
-    public IReadOnlyList<PayrollDeduction> Deductions => _deductions;
+    public IReadOnlyList<PayrollDeduction> Deductions => _deductions.AsReadOnly();
 
     private Payroll() { }
 
@@ -110,7 +110,9 @@ public sealed class Payroll : BaseEntity, IBranchScoped
 
     public void AddItem(PayrollItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.PayrollId, _items);
+
         EnsureDraft();
         if (item.Amount.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Payroll lines must be expressed in {CurrencyCode}.");
@@ -129,14 +131,18 @@ public sealed class Payroll : BaseEntity, IBranchScoped
 
     public void AddReward(PayrollReward reward)
     {
-        ArgumentNullException.ThrowIfNull(reward, nameof(reward));
+        ArgumentNullException.ThrowIfNull(reward);
+        EnsureCanAddChild(reward, reward.PayrollId, _rewards);
+
         EnsureDraft();
         _rewards.Add(reward);
     }
 
     public void AddDeduction(PayrollDeduction deduction)
     {
-        ArgumentNullException.ThrowIfNull(deduction, nameof(deduction));
+        ArgumentNullException.ThrowIfNull(deduction);
+        EnsureCanAddChild(deduction, deduction.PayrollId, _deductions);
+
         EnsureDraft();
         _deductions.Add(deduction);
     }

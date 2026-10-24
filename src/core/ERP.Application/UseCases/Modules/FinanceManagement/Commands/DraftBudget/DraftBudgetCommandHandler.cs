@@ -56,12 +56,12 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.DraftBudge
                         account,
                         line.PeriodNumber,
                         Money.Create(line.PlannedAmount, budget.CurrencyCode));
+                    budget.AddLine(budgetLine);
 
                     if (line.CostCenterId is not null)
-                        budgetLine.AssignCostCenter(line.CostCenterId.Value);
+                        budget.AssignBudgetLineCostCenter(budgetLine.Id, line.CostCenterId.Value);
 
-                    budgetLine.SetDescription(line.Description);
-                    budget.AddLine(budgetLine);
+                    budget.SetBudgetLineDescription(budgetLine.Id, line.Description);
                 }
 
                 if (request.SubmitImmediately)

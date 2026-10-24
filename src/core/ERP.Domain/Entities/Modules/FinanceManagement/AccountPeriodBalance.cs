@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// The running balance of one account, optionally for one subsidiary account, within one period.
 /// It is derived data kept so a trial balance does not have to re-aggregate the whole journal.
 /// </summary>
-public sealed class AccountPeriodBalance : BaseEntity, IBranchScoped
+public sealed class AccountPeriodBalance : AggregateRoot, IBranchScoped
 {
     public Guid FinancialYearId { get; private set; }
     public Guid AccountingPeriodId { get; private set; }

@@ -3,7 +3,7 @@
 /// <summary>
 /// What the shop floor reported for a period - output, scrap, downtime.
 /// </summary>
-public sealed class ProductionReport : BaseEntity
+public sealed class ProductionReport : AggregateRoot
 {
     public ProductionOrder Order { get; private set; } = default!;
     public int ActualQuantityProduced { get; private set; }

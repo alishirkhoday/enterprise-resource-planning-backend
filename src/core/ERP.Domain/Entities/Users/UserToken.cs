@@ -4,7 +4,7 @@
 /// A refresh token, stored as a hash. The raw token is shown to the client once and never
 /// kept, so a leaked database cannot be replayed as a login.
 /// </summary>
-public sealed class UserToken : BaseEntity
+public sealed class UserToken : AggregateRoot
 {
     public User User { get; private set; } = default!;
     public Guid UserId { get; private set; }

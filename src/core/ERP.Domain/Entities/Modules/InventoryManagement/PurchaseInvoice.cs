@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// The supplier bill. Posting it is what creates the payable, and it is matched against the
 /// order and the receipt so nobody is paid for what never arrived.
 /// </summary>
-public sealed class PurchaseInvoice : BaseEntity, IBranchScoped
+public sealed partial class PurchaseInvoice : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -32,7 +32,7 @@ public sealed class PurchaseInvoice : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<PurchaseInvoiceItem> _items = [];
-    public IReadOnlyList<PurchaseInvoiceItem> Items => _items;
+    public IReadOnlyList<PurchaseInvoiceItem> Items => _items.AsReadOnly();
 
     private PurchaseInvoice() { }
 
@@ -87,7 +87,9 @@ public sealed class PurchaseInvoice : BaseEntity, IBranchScoped
 
     public void AddItem(PurchaseInvoiceItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.InvoiceId, _items);
+
         EnsureDraft();
         if (item.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Invoice lines must be priced in {CurrencyCode}.");

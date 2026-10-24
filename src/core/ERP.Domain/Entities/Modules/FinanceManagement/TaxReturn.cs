@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// The periodic filing that nets input tax against output tax and states what is owed.
 /// </summary>
-public sealed class TaxReturn : BaseEntity, IBranchScoped
+public sealed class TaxReturn : AggregateRoot, IBranchScoped
 {
     public string? Number { get; private set; }
     public TaxType Type { get; private set; }

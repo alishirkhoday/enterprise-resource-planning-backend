@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.PricingManagement;
 /// A set of prices that applies to a currency, a period and normally a customer group. Orders
 /// and quotations read the price that was in force on their own date.
 /// </summary>
-public sealed class PriceList : BaseEntity, IBranchScoped
+public sealed partial class PriceList : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -27,7 +27,7 @@ public sealed class PriceList : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<PriceListItem> _items = [];
-    public IReadOnlyList<PriceListItem> Items => _items;
+    public IReadOnlyList<PriceListItem> Items => _items.AsReadOnly();
 
     private PriceList() { }
 
@@ -68,7 +68,9 @@ public sealed class PriceList : BaseEntity, IBranchScoped
 
     public void AddItem(PriceListItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.PriceListId, _items);
+
         if (item.BasePrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Price list lines must be expressed in {CurrencyCode}.");
         if (_items.Any(i => i.ItemId == item.ItemId && i.MinimumQuantity == item.MinimumQuantity))
@@ -76,8 +78,35 @@ public sealed class PriceList : BaseEntity, IBranchScoped
         _items.Add(item);
     }
 
+    /// <summary>Validates a complete replacement or merge before changing any existing prices.</summary>
+    public void SetItems(IEnumerable<PriceListItem> items, bool replaceAll = false)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        var incoming = items.ToArray();
+        if (incoming.Any(item => item is null))
+            throw new ArgumentException("Price list lines cannot be null.", nameof(items));
+        var replacement = replaceAll ? new List<PriceListItem>() : _items
+            .Where(existing => !incoming.Any(item => item.ItemId == existing.ItemId && item.MinimumQuantity == existing.MinimumQuantity))
+            .ToList();
+        foreach (var item in incoming)
+        {
+            EnsureCanAddChild(item, item.PriceListId, replacement);
+            if (item.BasePrice.CurrencyCode != CurrencyCode)
+                throw new InvalidOperationException($"Price list lines must be expressed in {CurrencyCode}.");
+            if (replacement.Any(existing => existing.ItemId == item.ItemId && existing.MinimumQuantity == item.MinimumQuantity))
+                throw new InvalidOperationException("That item already has a price at this quantity break.");
+            replacement.Add(item);
+        }
+        _items.Clear();
+        _items.AddRange(replacement);
+    }
+
     public void RemoveItem(PriceListItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.PriceListId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         _items.Remove(item);
     }

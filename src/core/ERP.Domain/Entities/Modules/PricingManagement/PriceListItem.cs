@@ -41,7 +41,8 @@ public sealed class PriceListItem : BaseEntity
 
     private PriceListItem() { }
 
-    public PriceListItem(PriceList priceList, Item item, Guid unitOfMeasureId, Money basePrice, decimal minimumQuantity = 1m)
+    public PriceListItem(PriceList priceList, Item item, Guid unitOfMeasureId, Money basePrice, decimal minimumQuantity = 1m,
+        Percentage? discountPercentage = null, Guid? taxId = null, Percentage? taxPercentage = null, Money? minimumPrice = null)
     {
         ArgumentNullException.ThrowIfNull(priceList, nameof(priceList));
         ArgumentNullException.ThrowIfNull(item, nameof(item));
@@ -60,29 +61,38 @@ public sealed class PriceListItem : BaseEntity
         BasePrice = basePrice;
         MinimumQuantity = minimumQuantity;
         IsActive = true;
+        SetDiscount(discountPercentage);
+        SetTax(taxId, taxPercentage);
+        if (minimumPrice is not null) SetMinimumPrice(minimumPrice);
     }
 
-    public void SetBasePrice(Money basePrice)
+    internal void SetBasePrice(Money basePrice)
     {
         ArgumentNullException.ThrowIfNull(basePrice, nameof(basePrice));
         if (basePrice.IsNegative)
             throw new ArgumentOutOfRangeException(nameof(basePrice), "A price cannot be negative.");
+        if (basePrice.CurrencyCode != BasePrice.CurrencyCode)
+            throw new ArgumentException("The price must keep the list currency.", nameof(basePrice));
+        if (MinimumPrice is not null && basePrice.Amount < MinimumPrice.Amount)
+            throw new ArgumentOutOfRangeException(nameof(basePrice), "The base price cannot fall below the minimum price.");
         BasePrice = basePrice;
     }
 
-    public void SetDiscount(Percentage? discountPercentage) => DiscountPercentage = discountPercentage;
+    internal void SetDiscount(Percentage? discountPercentage) => DiscountPercentage = discountPercentage;
 
-    public void SetTax(Guid? taxId, Percentage? taxPercentage)
+    internal void SetTax(Guid? taxId, Percentage? taxPercentage)
     {
         TaxId = taxId == Guid.Empty ? null : taxId;
         TaxPercentage = taxPercentage;
     }
 
-    public void SetMinimumPrice(Money minimumPrice)
+    internal void SetMinimumPrice(Money minimumPrice)
     {
         ArgumentNullException.ThrowIfNull(minimumPrice, nameof(minimumPrice));
         if (minimumPrice.CurrencyCode != BasePrice.CurrencyCode)
             throw new ArgumentException("The floor must share the price currency.", nameof(minimumPrice));
+        if (minimumPrice.IsNegative)
+            throw new ArgumentOutOfRangeException(nameof(minimumPrice), "The minimum price cannot be negative.");
         if (minimumPrice.Amount > BasePrice.Amount)
             throw new ArgumentOutOfRangeException(nameof(minimumPrice), "The floor cannot be above the base price.");
         MinimumPrice = minimumPrice;
@@ -95,6 +105,6 @@ public sealed class PriceListItem : BaseEntity
         return MinimumPrice is null || proposedPrice.Amount >= MinimumPrice.Amount;
     }
 
-    public void Activate() => IsActive = true;
-    public void Deactivate() => IsActive = false;
+    internal void Activate() => IsActive = true;
+    internal void Deactivate() => IsActive = false;
 }

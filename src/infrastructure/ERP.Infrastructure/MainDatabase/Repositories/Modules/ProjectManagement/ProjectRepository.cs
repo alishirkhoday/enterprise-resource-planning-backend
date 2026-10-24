@@ -68,6 +68,9 @@ public class ProjectRepository(IMainDbContext context) : Repository<Project>(con
 
     public async Task<ProjectMilestone?> GetMilestoneAsync(Guid milestoneId, CancellationToken cancellationToken = default)
     {
-        return await _context.ProjectMilestones.FirstOrDefaultAsync(m => m.Id == milestoneId, cancellationToken);
+        var project = await _entity
+            .Include(p => p.Phases).ThenInclude(phase => phase.Milestones)
+            .FirstOrDefaultAsync(p => p.Phases.Any(phase => phase.Milestones.Any(m => m.Id == milestoneId)), cancellationToken);
+        return project?.Phases.SelectMany(phase => phase.Milestones).SingleOrDefault(m => m.Id == milestoneId);
     }
 }

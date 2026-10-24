@@ -20,7 +20,7 @@ namespace ERP.Application.UseCases.Modules.ProjectManagement.Commands.AchieveMil
 
             try
             {
-                milestone.Achieve(request.AchievedOn);
+                milestone.Phase.Project.AchieveProjectMilestone(milestone.Id, request.AchievedOn);
             }
             catch (InvalidOperationException exception)
             {

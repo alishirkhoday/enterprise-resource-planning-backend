@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// Someone who has shown interest but is not yet a customer. Qualifying a lead is what turns it
 /// into an opportunity worth pursuing.
 /// </summary>
-public sealed class Lead : BaseEntity, IBranchScoped
+public sealed class Lead : AggregateRoot, IBranchScoped
 {
     public string FullName { get; private set; } = default!;
     public string? CompanyName { get; private set; }
@@ -31,13 +31,13 @@ public sealed class Lead : BaseEntity, IBranchScoped
     public string? DisqualificationReason { get; private set; }
 
     private readonly List<LeadNote> _notes = [];
-    public IReadOnlyList<LeadNote> Notes => _notes;
+    public IReadOnlyList<LeadNote> Notes => _notes.AsReadOnly();
 
     private readonly List<LeadInteraction> _interactions = [];
-    public IReadOnlyList<LeadInteraction> Interactions => _interactions;
+    public IReadOnlyList<LeadInteraction> Interactions => _interactions.AsReadOnly();
 
     private readonly List<Opportunity> _opportunities = [];
-    public IReadOnlyList<Opportunity> Opportunities => _opportunities;
+    public IReadOnlyList<Opportunity> Opportunities => _opportunities.AsReadOnly();
 
     private Lead() { }
 
@@ -64,7 +64,7 @@ public sealed class Lead : BaseEntity, IBranchScoped
     public void SetAddress(Address address)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
-        Address = address;
+        Address = address.Copy();
     }
 
     public void AttributeToCampaign(Guid campaignId) => CampaignId = campaignId == Guid.Empty ? null : campaignId;
@@ -116,13 +116,17 @@ public sealed class Lead : BaseEntity, IBranchScoped
 
     public void AddNote(LeadNote note)
     {
-        ArgumentNullException.ThrowIfNull(note, nameof(note));
+        ArgumentNullException.ThrowIfNull(note);
+        EnsureCanAddChild(note, note.Lead.Id, _notes);
+
         _notes.Add(note);
     }
 
     public void AddInteraction(LeadInteraction interaction)
     {
-        ArgumentNullException.ThrowIfNull(interaction, nameof(interaction));
+        ArgumentNullException.ThrowIfNull(interaction);
+        EnsureCanAddChild(interaction, interaction.Lead.Id, _interactions);
+
         _interactions.Add(interaction);
         MarkAsContacted();
     }

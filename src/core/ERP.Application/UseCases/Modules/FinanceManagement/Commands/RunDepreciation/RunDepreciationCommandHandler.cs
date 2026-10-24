@@ -117,19 +117,17 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.RunDepreci
             try
             {
                 var entry = new DepreciationEntry(asset, period, charge);
+                // Adding the entry moves accumulated depreciation and may fully depreciate the asset.
+                asset.AddDepreciationEntry(entry);
 
                 if (units > 0m)
-                    entry.SetUnitsProduced(units);
+                    asset.SetDepreciationEntryUnitsProduced(entry.Id, units);
 
                 if (request.DocumentId is not null)
-                    entry.LinkToDocument(request.DocumentId.Value);
+                    asset.LinkDepreciationEntryToDocument(entry.Id, request.DocumentId.Value);
 
                 if (request.AccountingPeriodId is not null)
-                    entry.LinkToAccountingPeriod(request.AccountingPeriodId.Value);
-
-                // This is what moves the accumulated figure and flips the asset to fully
-                // depreciated once the book value reaches salvage.
-                asset.AddDepreciationEntry(entry);
+                    asset.LinkDepreciationEntryToAccountingPeriod(entry.Id, request.AccountingPeriodId.Value);
 
                 return Result.Success<bool, Error>(true);
             }

@@ -3,7 +3,7 @@
 /// <summary>
 /// A property items can vary by - colour, size. What variants are generated from.
 /// </summary>
-public sealed class ItemAttribute : BaseEntity
+public sealed class ItemAttribute : AggregateRoot
 {
     public ItemGroup Group { get; private set; } = default!;
     public Guid GroupId { get; private set; }
@@ -12,10 +12,10 @@ public sealed class ItemAttribute : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<ItemAttributeValue> _values = [];
-    public IReadOnlyList<ItemAttributeValue> Values => _values;
+    public IReadOnlyList<ItemAttributeValue> Values => _values.AsReadOnly();
 
     private readonly List<ItemSpecification> _specifications = [];
-    public IReadOnlyList<ItemSpecification> Specifications => _specifications;
+    public IReadOnlyList<ItemSpecification> Specifications => _specifications.AsReadOnly();
 
     private ItemAttribute() { }
 

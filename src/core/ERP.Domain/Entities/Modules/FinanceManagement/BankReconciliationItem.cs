@@ -36,11 +36,11 @@ public sealed class BankReconciliationItem : BaseEntity
         Description = description.Trim();
     }
 
-    public void LinkToBankTransaction(Guid bankTransactionId) => BankTransactionId = bankTransactionId == Guid.Empty ? null : bankTransactionId;
+    internal void LinkToBankTransaction(Guid bankTransactionId) => BankTransactionId = bankTransactionId == Guid.Empty ? null : bankTransactionId;
 
-    public void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
+    internal void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
 
-    public void LinkToCheque(Guid chequeId) => ChequeId = chequeId == Guid.Empty ? null : chequeId;
+    internal void LinkToCheque(Guid chequeId) => ChequeId = chequeId == Guid.Empty ? null : chequeId;
 
     /// <summary>
     /// How this item moves the book balance towards the statement balance. Items the bank has not

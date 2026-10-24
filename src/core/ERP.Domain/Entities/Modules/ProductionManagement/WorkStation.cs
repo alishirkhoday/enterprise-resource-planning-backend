@@ -3,7 +3,7 @@
 /// <summary>
 /// A position inside a work centre where one operation is carried out.
 /// </summary>
-public sealed class WorkStation : BaseEntity
+public sealed class WorkStation : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public string Location { get; private set; } = default!;

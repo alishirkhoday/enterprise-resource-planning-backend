@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// <summary>
 /// Goods sent back to a supplier, and the credit expected in exchange.
 /// </summary>
-public sealed class PurchaseReturn : BaseEntity, IBranchScoped
+public sealed partial class PurchaseReturn : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -29,7 +29,7 @@ public sealed class PurchaseReturn : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<PurchaseReturnItem> _items = [];
-    public IReadOnlyList<PurchaseReturnItem> Items => _items;
+    public IReadOnlyList<PurchaseReturnItem> Items => _items.AsReadOnly();
 
     private PurchaseReturn() { }
 
@@ -64,7 +64,9 @@ public sealed class PurchaseReturn : BaseEntity, IBranchScoped
 
     public void AddItem(PurchaseReturnItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.ReturnId, _items);
+
         EnsureDraft();
         if (item.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Return lines must be priced in {CurrencyCode}.");

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// A city, under a province. Carries a coordinate so an address can be placed on a map without
 /// geocoding the text every time.
 /// </summary>
-public sealed class City : BaseEntity
+public sealed class City : AggregateRoot
 {
     public Province Province { get; private set; } = default!;
     public Guid ProvinceId { get; private set; }

@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Common;
 /// <summary>
 /// A province, under a country and above its cities.
 /// </summary>
-public sealed class Province : BaseEntity
+public sealed class Province : AggregateRoot
 {
     public Country Country { get; private set; } = default!;
     public Guid CountryId { get; private set; }
@@ -13,7 +13,7 @@ public sealed class Province : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<City> _cities = [];
-    public IReadOnlyList<City> Cities => _cities;
+    public IReadOnlyList<City> Cities => _cities.AsReadOnly();
 
     private Province() { }
 

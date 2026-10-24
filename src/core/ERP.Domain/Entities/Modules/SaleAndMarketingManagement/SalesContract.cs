@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// A standing agreement with a customer: agreed prices and terms for a period, which orders
 /// raised under it inherit.
 /// </summary>
-public sealed class SalesContract : BaseEntity, IBranchScoped
+public sealed class SalesContract : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
     public string Title { get; private set; } = default!;

@@ -41,7 +41,7 @@ public sealed class SettlementAllocation : BaseEntity
         PayableId = payableId;
     }
 
-    public void SetDiscountTaken(Money discount)
+    internal void SetDiscountTaken(Money discount)
     {
         ArgumentNullException.ThrowIfNull(discount, nameof(discount));
         if (discount.CurrencyCode != Amount.CurrencyCode)
@@ -49,5 +49,5 @@ public sealed class SettlementAllocation : BaseEntity
         DiscountTaken = discount;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

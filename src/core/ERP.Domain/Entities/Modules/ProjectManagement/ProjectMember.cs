@@ -49,19 +49,19 @@ public sealed class ProjectMember : BaseEntity
         Allocation = allocation;
     }
 
-    public void SetRates(Money? hourlyCostRate, Money? hourlyBillingRate)
+    internal void SetRates(Money? hourlyCostRate, Money? hourlyBillingRate)
     {
         HourlyCostRate = hourlyCostRate;
         HourlyBillingRate = hourlyBillingRate;
     }
 
-    public void ChangeAllocation(Percentage allocation)
+    internal void ChangeAllocation(Percentage allocation)
     {
         ArgumentNullException.ThrowIfNull(allocation, nameof(allocation));
         Allocation = allocation;
     }
 
-    public void Leave(DateOnly leftOn) => LeftOn = leftOn;
+    internal void Leave(DateOnly leftOn) => LeftOn = leftOn;
 
     public bool IsCurrentlyActive =>
         LeftOn is null && Period.Contains(DateOnly.FromDateTime(DateTime.UtcNow));

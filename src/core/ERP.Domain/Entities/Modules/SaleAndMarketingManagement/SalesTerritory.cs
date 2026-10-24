@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// A geographic or segment area one team is answerable for, so customers and targets can be
 /// divided up without argument.
 /// </summary>
-public sealed class SalesTerritory : BaseEntity, IBranchScoped
+public sealed class SalesTerritory : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -14,14 +14,14 @@ public sealed class SalesTerritory : BaseEntity, IBranchScoped
     public Guid? ParentId { get; private set; }
 
     private readonly List<SalesTerritory> _children = [];
-    public IReadOnlyList<SalesTerritory> Children => _children;
+    public IReadOnlyList<SalesTerritory> Children => _children.AsReadOnly();
 
     public Guid? ManagerHumanId { get; private set; }
     public Guid? BranchId { get; private set; }
 
     /// <summary>The cities this territory covers, when it is drawn geographically.</summary>
     private readonly List<Guid> _cityIds = [];
-    public IReadOnlyList<Guid> CityIds => _cityIds;
+    public IReadOnlyList<Guid> CityIds => _cityIds.AsReadOnly();
 
     public bool IsActive { get; private set; }
 

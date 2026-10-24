@@ -47,7 +47,7 @@ public sealed class BudgetLine : BaseEntity
         CommittedAmount = Money.Zero(plannedAmount.CurrencyCode);
     }
 
-    public void SetPlannedAmount(Money plannedAmount)
+    internal void SetPlannedAmount(Money plannedAmount)
     {
         ArgumentNullException.ThrowIfNull(plannedAmount, nameof(plannedAmount));
         if (plannedAmount.IsNegative)
@@ -55,23 +55,23 @@ public sealed class BudgetLine : BaseEntity
         PlannedAmount = plannedAmount;
     }
 
-    public void AssignCostCenter(Guid costCenterId) => CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
+    internal void AssignCostCenter(Guid costCenterId) => CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void RecordActual(Money amount)
+    internal void RecordActual(Money amount)
     {
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         ActualAmount = ActualAmount.Add(amount);
     }
 
-    public void Commit(Money amount)
+    internal void Commit(Money amount)
     {
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         CommittedAmount = CommittedAmount.Add(amount);
     }
 
-    public void ReleaseCommitment(Money amount)
+    internal void ReleaseCommitment(Money amount)
     {
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         if (amount.Amount > CommittedAmount.Amount)

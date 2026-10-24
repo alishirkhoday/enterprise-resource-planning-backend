@@ -42,11 +42,11 @@ public sealed class MaintenancePartUsage : BaseEntity
         UnitCost = unitCost;
     }
 
-    public void SetSource(Guid? warehouseId, Guid? itemBatchId)
+    internal void SetSource(Guid? warehouseId, Guid? itemBatchId)
     {
         WarehouseId = warehouseId == Guid.Empty ? null : warehouseId;
         ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

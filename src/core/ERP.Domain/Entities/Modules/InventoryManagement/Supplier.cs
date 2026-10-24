@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// A party the organization buys from. What is kept here is what purchasing and accounts payable
 /// both need: how to reach them, how they are paid, and how well they perform.
 /// </summary>
-public sealed class Supplier : BaseEntity
+public sealed partial class Supplier : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -42,13 +42,13 @@ public sealed class Supplier : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<SupplierContact> _contacts = [];
-    public IReadOnlyList<SupplierContact> Contacts => _contacts;
+    public IReadOnlyList<SupplierContact> Contacts => _contacts.AsReadOnly();
 
     private readonly List<SupplierBankAccount> _bankAccounts = [];
-    public IReadOnlyList<SupplierBankAccount> BankAccounts => _bankAccounts;
+    public IReadOnlyList<SupplierBankAccount> BankAccounts => _bankAccounts.AsReadOnly();
 
     private readonly List<SupplierEvaluation> _evaluations = [];
-    public IReadOnlyList<SupplierEvaluation> Evaluations => _evaluations;
+    public IReadOnlyList<SupplierEvaluation> Evaluations => _evaluations.AsReadOnly();
 
     private Supplier() { }
 
@@ -83,7 +83,7 @@ public sealed class Supplier : BaseEntity
     public void SetAddress(Address address)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
-        Address = address;
+        Address = address.Copy();
     }
 
     public void SetLegalIdentifiers(string? economicCode, string? nationalIdentifier, string? registrationNumber)
@@ -118,7 +118,9 @@ public sealed class Supplier : BaseEntity
 
     public void AddContact(SupplierContact contact)
     {
-        ArgumentNullException.ThrowIfNull(contact, nameof(contact));
+        ArgumentNullException.ThrowIfNull(contact);
+        EnsureCanAddChild(contact, contact.SupplierId, _contacts);
+
         if (contact.IsPrimary)
             _contacts.ForEach(c => c.UnmarkAsPrimary());
         _contacts.Add(contact);
@@ -126,7 +128,9 @@ public sealed class Supplier : BaseEntity
 
     public void AddBankAccount(SupplierBankAccount bankAccount)
     {
-        ArgumentNullException.ThrowIfNull(bankAccount, nameof(bankAccount));
+        ArgumentNullException.ThrowIfNull(bankAccount);
+        EnsureCanAddChild(bankAccount, bankAccount.SupplierId, _bankAccounts);
+
         if (_bankAccounts.Any(b => b.AccountNumber == bankAccount.AccountNumber))
             throw new InvalidOperationException("This bank account is already registered for the supplier.");
         if (bankAccount.IsDefault)
@@ -137,7 +141,9 @@ public sealed class Supplier : BaseEntity
     /// <summary>Records an evaluation and refreshes the rolling performance score.</summary>
     public void AddEvaluation(SupplierEvaluation evaluation)
     {
-        ArgumentNullException.ThrowIfNull(evaluation, nameof(evaluation));
+        ArgumentNullException.ThrowIfNull(evaluation);
+        EnsureCanAddChild(evaluation, evaluation.SupplierId, _evaluations);
+
         _evaluations.Add(evaluation);
         PerformanceScore = (int)Math.Round(_evaluations.Average(e => e.TotalScore), MidpointRounding.AwayFromZero);
     }

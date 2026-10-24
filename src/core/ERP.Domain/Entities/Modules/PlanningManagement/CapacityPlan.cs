@@ -9,7 +9,7 @@ namespace ERP.Domain.Entities.Modules.PlanningManagement;
 /// work centre per bucket is what makes the overload visible while there is still time to move it.
 /// </para>
 /// </summary>
-public sealed class CapacityPlan : BaseEntity, IBranchScoped
+public sealed partial class CapacityPlan : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public DateRange Horizon { get; private set; } = default!;
@@ -27,7 +27,7 @@ public sealed class CapacityPlan : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<CapacityPlanLine> _lines = [];
-    public IReadOnlyList<CapacityPlanLine> Lines => _lines;
+    public IReadOnlyList<CapacityPlanLine> Lines => _lines.AsReadOnly();
 
     private CapacityPlan() { }
 
@@ -55,7 +55,9 @@ public sealed class CapacityPlan : BaseEntity, IBranchScoped
 
     public void AddLine(CapacityPlanLine line)
     {
-        ArgumentNullException.ThrowIfNull(line, nameof(line));
+        ArgumentNullException.ThrowIfNull(line);
+        EnsureCanAddChild(line, line.PlanId, _lines);
+
         if (Status != CapacityPlanStatus.Running)
             throw new InvalidOperationException($"Lines can only be written while the run is in progress; this one is {Status}.");
         if (_lines.Any(l => l.WorkCenterId == line.WorkCenterId && l.BucketStartDate == line.BucketStartDate))

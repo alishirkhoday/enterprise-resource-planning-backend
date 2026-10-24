@@ -15,7 +15,7 @@ namespace ERP.Domain.Entities.Modules.CorrespondenceManagement;
 /// and a letter from a ministry must not require a record to be invented for it first.
 /// </para>
 /// </summary>
-public sealed class Letter : BaseEntity, IBranchScoped
+public sealed partial class Letter : AggregateRoot, IBranchScoped
 {
     /// <summary>The registration number, unique within the register it was entered in.</summary>
     public string Number { get; private set; } = default!;
@@ -63,10 +63,10 @@ public sealed class Letter : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<LetterRecipient> _recipients = [];
-    public IReadOnlyList<LetterRecipient> Recipients => _recipients;
+    public IReadOnlyList<LetterRecipient> Recipients => _recipients.AsReadOnly();
 
     private readonly List<LetterReferral> _referrals = [];
-    public IReadOnlyList<LetterReferral> Referrals => _referrals;
+    public IReadOnlyList<LetterReferral> Referrals => _referrals.AsReadOnly();
 
     private Letter() { }
 
@@ -133,13 +133,19 @@ public sealed class Letter : BaseEntity, IBranchScoped
 
     public void AddRecipient(LetterRecipient recipient)
     {
-        ArgumentNullException.ThrowIfNull(recipient, nameof(recipient));
+        ArgumentNullException.ThrowIfNull(recipient);
+        EnsureCanAddChild(recipient, recipient.LetterId, _recipients);
+
         EnsureNotArchived();
         _recipients.Add(recipient);
     }
 
     public void RemoveRecipient(LetterRecipient recipient)
     {
+        ArgumentNullException.ThrowIfNull(recipient);
+        if (recipient.LetterId != Id || !_recipients.Contains(recipient))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(recipient, nameof(recipient));
         EnsureNotArchived();
         _recipients.Remove(recipient);

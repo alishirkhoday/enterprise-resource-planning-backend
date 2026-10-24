@@ -4,7 +4,7 @@
 /// How long a machine actually ran. The hours maintenance is scheduled from, since a machine
 /// that sat idle for a month does not need servicing for it.
 /// </summary>
-public sealed class MachineUsageLog : BaseEntity
+public sealed class MachineUsageLog : AggregateRoot
 {
     public Machine Machine { get; private set; } = default!;
     public ProductionTask Task { get; private set; } = default!;

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// A competency the organization recognises, used both to describe people and to state what a
 /// position requires.
 /// </summary>
-public sealed class Skill : BaseEntity
+public sealed class Skill : AggregateRoot
 {
     public string Name { get; private set; } = default!;
     public string? Category { get; private set; }

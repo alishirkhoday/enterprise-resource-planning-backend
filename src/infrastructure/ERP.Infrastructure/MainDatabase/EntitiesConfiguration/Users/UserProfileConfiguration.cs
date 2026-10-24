@@ -16,6 +16,8 @@ namespace ERP.Infrastructure.MainDatabase.EntitiesConfiguration.Users
                 up.Property(i => i.Alt).HasMaxLength(400).IsRequired(false);
             });
 
+            builder.Navigation(up => up.Image).IsRequired(false);
+
             builder.HasOne(up => up.User).WithOne().HasForeignKey<UserProfile>(up => up.UserId).OnDelete(DeleteBehavior.Cascade);
         }
     }

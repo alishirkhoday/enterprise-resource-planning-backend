@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// <summary>
 /// An open vacancy against a position. Closing it is what ends the hiring process.
 /// </summary>
-public sealed class JobPosting : BaseEntity, IBranchScoped
+public sealed class JobPosting : AggregateRoot, IBranchScoped
 {
     public Position Position { get; private set; } = default!;
     public Guid PositionId { get; private set; }
@@ -26,7 +26,7 @@ public sealed class JobPosting : BaseEntity, IBranchScoped
     public Guid? HiringManagerHumanId { get; private set; }
 
     private readonly List<JobApplication> _applications = [];
-    public IReadOnlyList<JobApplication> Applications => _applications;
+    public IReadOnlyList<JobApplication> Applications => _applications.AsReadOnly();
 
     private JobPosting() { }
 

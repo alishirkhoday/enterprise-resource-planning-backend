@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Notifications;
 /// A message addressed to one recipient. The rendered text is stored rather than re-rendered,
 /// so what was actually sent stays auditable even after the template changes.
 /// </summary>
-public sealed class Notification : BaseEntity
+public sealed class Notification : AggregateRoot
 {
     public Guid? TemplateId { get; private set; }
     public NotificationChannel Channel { get; private set; }

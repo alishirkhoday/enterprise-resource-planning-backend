@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.WarehouseManagement;
 /// <summary>
 /// A company that moves goods on the organization behalf.
 /// </summary>
-public sealed class Carrier : BaseEntity
+public sealed class Carrier : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -44,7 +44,7 @@ public sealed class Carrier : BaseEntity
     public void SetAddress(Address address)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
-        Address = address;
+        Address = address.Copy();
     }
 
     public void SetTrackingUrlTemplate(string? template) =>

@@ -40,31 +40,7 @@ namespace ERP.Application.UseCases.Modules.PricingManagement.Commands.SetPriceLi
 
             try
             {
-                if (request.ReplaceAll)
-                {
-                    foreach (var existing in priceList.Items.ToArray())
-                    {
-                        priceList.RemoveItem(existing);
-                    }
-                }
-                else
-                {
-                    // A merge restates rather than duplicates: the domain refuses a second line
-                    // for the same item at the same break, so the old one comes off first.
-                    foreach (var line in built.Value)
-                    {
-                        var superseded = priceList.Items
-                            .FirstOrDefault(i => i.ItemId == line.ItemId && i.MinimumQuantity == line.MinimumQuantity);
-
-                        if (superseded is not null)
-                            priceList.RemoveItem(superseded);
-                    }
-                }
-
-                foreach (var line in built.Value)
-                {
-                    priceList.AddItem(line);
-                }
+                priceList.SetItems(built.Value, request.ReplaceAll);
             }
             catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
             {

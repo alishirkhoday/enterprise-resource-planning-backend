@@ -9,7 +9,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// placed - otherwise nobody notices the commitment was missed until the supplier asks for it.
 /// </para>
 /// </summary>
-public sealed class PurchaseContract : BaseEntity, IBranchScoped
+public sealed partial class PurchaseContract : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
     public string Title { get; private set; } = default!;
@@ -40,7 +40,7 @@ public sealed class PurchaseContract : BaseEntity, IBranchScoped
     public string? Terms { get; private set; }
 
     private readonly List<PurchaseContractItem> _items = [];
-    public IReadOnlyList<PurchaseContractItem> Items => _items;
+    public IReadOnlyList<PurchaseContractItem> Items => _items.AsReadOnly();
 
     private PurchaseContract() { }
 
@@ -92,7 +92,9 @@ public sealed class PurchaseContract : BaseEntity, IBranchScoped
 
     public void AddItem(PurchaseContractItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.ContractId, _items);
+
         EnsureDraft();
         if (item.AgreedUnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Prices on this contract must be expressed in {CurrencyCode}.");
@@ -103,6 +105,10 @@ public sealed class PurchaseContract : BaseEntity, IBranchScoped
 
     public void RemoveItem(PurchaseContractItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.ContractId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);

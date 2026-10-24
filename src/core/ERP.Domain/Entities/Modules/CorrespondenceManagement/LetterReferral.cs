@@ -50,7 +50,7 @@ public sealed class LetterReferral : BaseEntity
     /// Records that the recipient opened it. Kept apart from answering, because "it was never
     /// passed to me" and "I have not got to it yet" are different problems.
     /// </summary>
-    public void MarkAsSeen()
+    internal void MarkAsSeen()
     {
         if (Status != LetterReferralStatus.Pending)
             return;
@@ -58,7 +58,7 @@ public sealed class LetterReferral : BaseEntity
         Status = LetterReferralStatus.Seen;
     }
 
-    public void Respond(string response)
+    internal void Respond(string response)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(response, nameof(response));
         if (!IsOutstanding)
@@ -71,7 +71,7 @@ public sealed class LetterReferral : BaseEntity
     }
 
     /// <summary>Takes the letter back out of somebody's queue without them answering it.</summary>
-    public void Withdraw(string reason)
+    internal void Withdraw(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (!IsOutstanding)

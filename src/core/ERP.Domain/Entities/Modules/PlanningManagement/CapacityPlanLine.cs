@@ -58,13 +58,13 @@ public sealed class CapacityPlanLine : BaseEntity
         Efficiency = Percentage.Create(100m);
     }
 
-    public void SetEfficiency(Percentage efficiency)
+    internal void SetEfficiency(Percentage efficiency)
     {
         ArgumentNullException.ThrowIfNull(efficiency, nameof(efficiency));
         Efficiency = efficiency;
     }
 
-    public void RecordLoad(decimal firmLoadHours, decimal plannedLoadHours)
+    internal void RecordLoad(decimal firmLoadHours, decimal plannedLoadHours)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(firmLoadHours, nameof(firmLoadHours));
         ArgumentOutOfRangeException.ThrowIfNegative(plannedLoadHours, nameof(plannedLoadHours));
@@ -72,7 +72,7 @@ public sealed class CapacityPlanLine : BaseEntity
         PlannedLoadHours = plannedLoadHours;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public decimal OverloadHours => Math.Max(0m, TotalLoadHours - EffectiveHours);
 

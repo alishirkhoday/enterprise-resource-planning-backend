@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// Something an employee is expected to achieve in a period, measured against a target.
 /// Reviews score the goals rather than inventing a number from nothing.
 /// </summary>
-public sealed class PerformanceGoal : BaseEntity
+public sealed class PerformanceGoal : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }

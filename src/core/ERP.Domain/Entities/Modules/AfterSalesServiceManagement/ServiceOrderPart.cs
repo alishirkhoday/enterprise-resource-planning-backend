@@ -61,31 +61,31 @@ public sealed class ServiceOrderPart : BaseEntity
         IsChargeable = serviceOrder.IsChargeable;
     }
 
-    public void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
+    internal void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
     {
         ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
         SerialNumberId = serialNumberId == Guid.Empty ? null : serialNumberId;
     }
 
-    public void SetUnitCost(Money unitCost)
+    internal void SetUnitCost(Money unitCost)
     {
         ArgumentNullException.ThrowIfNull(unitCost, nameof(unitCost));
         UnitCost = unitCost;
     }
 
     /// <summary>Covers the part, so it is issued from stock but not billed.</summary>
-    public void CoverUnderWarranty() => IsChargeable = false;
+    internal void CoverUnderWarranty() => IsChargeable = false;
 
-    public void MakeChargeable()
+    internal void MakeChargeable()
     {
         if (!ServiceOrder.IsChargeable)
             throw new InvalidOperationException($"A part on a {ServiceOrder.Type} service order cannot be charged to the customer.");
         IsChargeable = true;
     }
 
-    public void MarkAsReturnedForInspection() => IsReturnedForInspection = true;
+    internal void MarkAsReturnedForInspection() => IsReturnedForInspection = true;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public Money LineTotal => IsChargeable ? UnitPrice.Multiply(Quantity) : Money.Zero(UnitPrice.CurrencyCode);
 

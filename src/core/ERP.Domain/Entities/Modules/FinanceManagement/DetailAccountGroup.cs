@@ -5,7 +5,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// which groups may be used against them, which is what keeps a receivable posted against a
 /// customer rather than against a machine.
 /// </summary>
-public sealed class DetailAccountGroup : BaseEntity
+public sealed class DetailAccountGroup : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -21,7 +21,7 @@ public sealed class DetailAccountGroup : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<DetailAccount> _accounts = [];
-    public IReadOnlyList<DetailAccount> Accounts => _accounts;
+    public IReadOnlyList<DetailAccount> Accounts => _accounts.AsReadOnly();
 
     private DetailAccountGroup() { }
 

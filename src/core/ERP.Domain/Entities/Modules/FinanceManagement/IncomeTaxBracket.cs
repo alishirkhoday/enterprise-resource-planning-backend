@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// One band of the progressive payroll income tax table for a given year. Brackets are held as
 /// data because the legislature revises them annually.
 /// </summary>
-public sealed class IncomeTaxBracket : BaseEntity
+public sealed class IncomeTaxBracket : AggregateRoot
 {
     /// <summary>The tax year the band belongs to.</summary>
     public int Year { get; private set; }

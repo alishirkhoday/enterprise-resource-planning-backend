@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// A unit that costs are collected against. Cost centres are cross cutting: production, payroll,
 /// purchasing and general ledger entries all point at one.
 /// </summary>
-public sealed class CostCenter : BaseEntity, IBranchScoped
+public sealed class CostCenter : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -18,7 +18,7 @@ public sealed class CostCenter : BaseEntity, IBranchScoped
     public Guid? ParentId { get; private set; }
 
     private readonly List<CostCenter> _children = [];
-    public IReadOnlyList<CostCenter> Children => _children;
+    public IReadOnlyList<CostCenter> Children => _children.AsReadOnly();
 
     private CostCenter() { }
 

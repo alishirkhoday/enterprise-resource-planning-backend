@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// <summary>
 /// A marketing push with a budget, whose worth is judged by the leads and revenue attributed to it.
 /// </summary>
-public sealed class Campaign : BaseEntity, IBranchScoped
+public sealed class Campaign : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -27,7 +27,7 @@ public sealed class Campaign : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<Lead> _leads = [];
-    public IReadOnlyList<Lead> Leads => _leads;
+    public IReadOnlyList<Lead> Leads => _leads.AsReadOnly();
 
     private Campaign() { }
 

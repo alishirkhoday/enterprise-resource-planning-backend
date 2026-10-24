@@ -69,16 +69,16 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.ReverseJou
             foreach (var line in original.Items.OrderBy(i => i.Priority))
             {
                 var mirrored = new DocumentItem(reversal, line.Account, priority++, line.Creditor, line.Debtor);
-                mirrored.SetDetailAccounts(line.DetailAccount1, line.DetailAccount2, line.DetailAccount3);
+                reversal.AddItem(mirrored);
+                reversal.SetDocumentItemDetailAccounts(mirrored.Id, line.DetailAccount1, line.DetailAccount2, line.DetailAccount3);
 
                 if (line.CostCenterId is not null)
-                    mirrored.AssignCostCenter(line.CostCenterId.Value);
+                    reversal.AssignDocumentItemCostCenter(mirrored.Id, line.CostCenterId.Value);
 
                 if (line.ProjectId is not null)
-                    mirrored.AssignProject(line.ProjectId.Value);
+                    reversal.AssignDocumentItemProject(mirrored.Id, line.ProjectId.Value);
 
-                mirrored.SetDescription(line.Description);
-                reversal.AddItem(mirrored);
+                reversal.SetDocumentItemDescription(mirrored.Id, line.Description);
             }
 
             var series = await numberingSeries.GetForUpdateAsync(

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// A piece of equipment on the shop floor. Its running hours and status are what drive
 /// preventive maintenance and availability reporting.
 /// </summary>
-public sealed class Machine : BaseEntity, IBranchScoped
+public sealed class Machine : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;

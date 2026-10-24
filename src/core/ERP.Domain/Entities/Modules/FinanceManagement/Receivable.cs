@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// An amount a customer owes, tracked from the moment it is raised until it is fully settled.
 /// Ageing reports read these rather than re-deriving them from the journal.
 /// </summary>
-public sealed class Receivable : BaseEntity, IBranchScoped
+public sealed class Receivable : AggregateRoot, IBranchScoped
 {
     /// <summary>The subsidiary account of the party that owes the money.</summary>
     public Guid PartyDetailAccountId { get; private set; }
@@ -60,9 +60,9 @@ public sealed class Receivable : BaseEntity, IBranchScoped
 
     public void ApplyPaymentTerm(Guid paymentTermId, DateOnly dueDate)
     {
-        PaymentTermId = paymentTermId == Guid.Empty ? null : paymentTermId;
         if (dueDate < IssueDate)
             throw new ArgumentOutOfRangeException(nameof(dueDate), "DueDate cannot be earlier than IssueDate.");
+        PaymentTermId = paymentTermId == Guid.Empty ? null : paymentTermId;
         DueDate = dueDate;
     }
 

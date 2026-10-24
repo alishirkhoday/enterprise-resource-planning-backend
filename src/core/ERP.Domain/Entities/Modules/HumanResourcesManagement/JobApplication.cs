@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// <summary>
 /// One candidate pursuing one vacancy, together with the interviews held along the way.
 /// </summary>
-public sealed class JobApplication : BaseEntity
+public sealed partial class JobApplication : AggregateRoot
 {
     public JobPosting Posting { get; private set; } = default!;
     public Guid PostingId { get; private set; }
@@ -22,7 +22,7 @@ public sealed class JobApplication : BaseEntity
     public int? ScreeningScore { get; private set; }
 
     private readonly List<Interview> _interviews = [];
-    public IReadOnlyList<Interview> Interviews => _interviews;
+    public IReadOnlyList<Interview> Interviews => _interviews.AsReadOnly();
 
     private JobApplication() { }
 
@@ -66,7 +66,9 @@ public sealed class JobApplication : BaseEntity
 
     public void ScheduleInterview(Interview interview)
     {
-        ArgumentNullException.ThrowIfNull(interview, nameof(interview));
+        ArgumentNullException.ThrowIfNull(interview);
+        EnsureCanAddChild(interview, interview.ApplicationId, _interviews);
+
         EnsureOpen();
         _interviews.Add(interview);
         Status = JobApplicationStatus.Interviewing;

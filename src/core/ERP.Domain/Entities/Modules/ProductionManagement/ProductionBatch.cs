@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// A run of output that shares a batch number, so finished goods can be traced back to the
 /// materials and the shift that made them.
 /// </summary>
-public sealed class ProductionBatch : BaseEntity
+public sealed class ProductionBatch : AggregateRoot
 {
     public string BatchCode { get; private set; } = default!;
     public Item Item { get; private set; } = default!;

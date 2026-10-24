@@ -47,16 +47,16 @@ public sealed class DemandForecastLine : BaseEntity
         UnitOfMeasureId = unitOfMeasureId;
     }
 
-    public void SetConfidence(Percentage confidence)
+    internal void SetConfidence(Percentage confidence)
     {
         ArgumentNullException.ThrowIfNull(confidence, nameof(confidence));
         Confidence = confidence;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     /// <summary>Records what really happened, so the next forecast can be better than this one.</summary>
-    public void RecordActual(decimal actualQuantity)
+    internal void RecordActual(decimal actualQuantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(actualQuantity, nameof(actualQuantity));
         ActualQuantity = actualQuantity;

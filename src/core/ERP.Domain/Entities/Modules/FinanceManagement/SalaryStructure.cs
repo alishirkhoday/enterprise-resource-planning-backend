@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// The set of earnings and deductions that make up pay for a class of employees, and the rules
 /// that compute each one. Payroll runs read a structure instead of hard coding the arithmetic.
 /// </summary>
-public sealed class SalaryStructure : BaseEntity
+public sealed partial class SalaryStructure : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -14,7 +14,7 @@ public sealed class SalaryStructure : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<SalaryStructureItem> _items = [];
-    public IReadOnlyList<SalaryStructureItem> Items => _items;
+    public IReadOnlyList<SalaryStructureItem> Items => _items.AsReadOnly();
 
     private SalaryStructure() { }
 
@@ -41,7 +41,9 @@ public sealed class SalaryStructure : BaseEntity
 
     public void AddItem(SalaryStructureItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.StructureId, _items);
+
         if (_items.Any(i => i.Code == item.Code))
             throw new InvalidOperationException($"An item with code {item.Code} already exists in this structure.");
         _items.Add(item);

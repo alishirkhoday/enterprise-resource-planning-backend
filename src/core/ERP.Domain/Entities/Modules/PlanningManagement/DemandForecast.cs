@@ -9,7 +9,7 @@ namespace ERP.Domain.Entities.Modules.PlanningManagement;
 /// argued over, revised and compared against what actually happened.
 /// </para>
 /// </summary>
-public sealed class DemandForecast : BaseEntity, IBranchScoped
+public sealed partial class DemandForecast : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -27,7 +27,7 @@ public sealed class DemandForecast : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<DemandForecastLine> _lines = [];
-    public IReadOnlyList<DemandForecastLine> Lines => _lines;
+    public IReadOnlyList<DemandForecastLine> Lines => _lines.AsReadOnly();
 
     private DemandForecast() { }
 
@@ -55,7 +55,9 @@ public sealed class DemandForecast : BaseEntity, IBranchScoped
 
     public void AddLine(DemandForecastLine line)
     {
-        ArgumentNullException.ThrowIfNull(line, nameof(line));
+        ArgumentNullException.ThrowIfNull(line);
+        EnsureCanAddChild(line, line.ForecastId, _lines);
+
         EnsureDraft();
         if (!Horizon.Contains(line.BucketStartDate))
             throw new InvalidOperationException($"The bucket starting {line.BucketStartDate} falls outside the forecast horizon.");
@@ -66,6 +68,10 @@ public sealed class DemandForecast : BaseEntity, IBranchScoped
 
     public void RemoveLine(DemandForecastLine line)
     {
+        ArgumentNullException.ThrowIfNull(line);
+        if (line.ForecastId != Id || !_lines.Contains(line))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(line, nameof(line));
         EnsureDraft();
         _lines.Remove(line);

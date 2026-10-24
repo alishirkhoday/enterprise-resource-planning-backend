@@ -44,13 +44,13 @@ public sealed class PayrollItem : BaseEntity
         Amount = amount;
     }
 
-    public void SetTaxTreatment(bool isTaxable, bool isInsurable)
+    internal void SetTaxTreatment(bool isTaxable, bool isInsurable)
     {
         IsTaxable = isTaxable;
         IsInsurable = isInsurable;
     }
 
-    public void SetQuantity(decimal quantity, Money unitRate)
+    internal void SetQuantity(decimal quantity, Money unitRate)
     {
         ArgumentNullException.ThrowIfNull(unitRate, nameof(unitRate));
         ArgumentOutOfRangeException.ThrowIfNegative(quantity, nameof(quantity));
@@ -58,10 +58,10 @@ public sealed class PayrollItem : BaseEntity
         UnitRate = unitRate;
     }
 
-    public void LinkToStructureItem(Guid salaryStructureItemId) =>
+    internal void LinkToStructureItem(Guid salaryStructureItemId) =>
         SalaryStructureItemId = salaryStructureItemId == Guid.Empty ? null : salaryStructureItemId;
 
-    public void LinkAccount(Guid accountId) => AccountId = accountId == Guid.Empty ? null : accountId;
+    internal void LinkAccount(Guid accountId) => AccountId = accountId == Guid.Empty ? null : accountId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

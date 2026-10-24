@@ -62,7 +62,7 @@ public sealed class DocumentItem : BaseEntity
     /// Attaches the subsidiary accounts this line belongs to, after checking them against the
     /// groups the ledger account declares.
     /// </summary>
-    public void SetDetailAccounts(DetailAccount? level1, DetailAccount? level2 = null, DetailAccount? level3 = null)
+    internal void SetDetailAccounts(DetailAccount? level1, DetailAccount? level2 = null, DetailAccount? level3 = null)
     {
         Account.EnsureDetailAccountsAreValid(level1, level2, level3);
         DetailAccount1 = level1;
@@ -74,7 +74,7 @@ public sealed class DocumentItem : BaseEntity
     }
 
     /// <summary>Records the foreign currency original of a line that was converted to book currency.</summary>
-    public void SetForeignAmount(Money foreignAmount, decimal exchangeRate)
+    internal void SetForeignAmount(Money foreignAmount, decimal exchangeRate)
     {
         ArgumentNullException.ThrowIfNull(foreignAmount, nameof(foreignAmount));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(exchangeRate, nameof(exchangeRate));
@@ -84,11 +84,11 @@ public sealed class DocumentItem : BaseEntity
         ExchangeRate = exchangeRate;
     }
 
-    public void AssignCostCenter(Guid costCenterId) => CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
+    internal void AssignCostCenter(Guid costCenterId) => CostCenterId = costCenterId == Guid.Empty ? null : costCenterId;
 
-    public void AssignProject(Guid projectId) => ProjectId = projectId == Guid.Empty ? null : projectId;
+    internal void AssignProject(Guid projectId) => ProjectId = projectId == Guid.Empty ? null : projectId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public bool IsDebit => Debtor > 0;
 }

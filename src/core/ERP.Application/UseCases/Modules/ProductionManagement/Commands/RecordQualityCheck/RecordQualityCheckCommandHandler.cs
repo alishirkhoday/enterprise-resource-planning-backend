@@ -96,8 +96,8 @@ namespace ERP.Application.UseCases.Modules.ProductionManagement.Commands.RecordQ
                     ? new QualityMeasurement(check, parameter, measurement.NumericValue.Value)
                     : new QualityMeasurement(check, parameter, measurement.TextValue!, measurement.IsAcceptable);
 
-                reading.SetNotes(measurement.Notes);
                 check.AddMeasurement(reading);
+                check.SetQualityMeasurementNotes(reading.Id, measurement.Notes);
             }
 
             return Result.Success<bool, Error>(true);

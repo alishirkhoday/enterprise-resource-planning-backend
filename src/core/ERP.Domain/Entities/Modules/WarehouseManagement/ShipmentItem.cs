@@ -44,18 +44,18 @@ public sealed class ShipmentItem : BaseEntity
         UnitOfMeasureId = unitOfMeasureId;
     }
 
-    public void LinkToSaleOrderItem(Guid saleOrderItemId) =>
+    internal void LinkToSaleOrderItem(Guid saleOrderItemId) =>
         SaleOrderItemId = saleOrderItemId == Guid.Empty ? null : saleOrderItemId;
 
-    public void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
+    internal void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
     {
         ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
         SerialNumberId = serialNumberId == Guid.Empty ? null : serialNumberId;
     }
 
-    public void ScopeToStorageLocation(Guid storageLocationId) =>
+    internal void ScopeToStorageLocation(Guid storageLocationId) =>
         StorageLocationId = storageLocationId == Guid.Empty ? null : storageLocationId;
 
-    public void SetPackageReference(string? packageReference) =>
+    internal void SetPackageReference(string? packageReference) =>
         PackageReference = string.IsNullOrWhiteSpace(packageReference) ? null : packageReference.Trim();
 }

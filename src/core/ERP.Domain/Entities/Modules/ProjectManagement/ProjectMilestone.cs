@@ -37,7 +37,7 @@ public sealed class ProjectMilestone : BaseEntity
         Status = MilestoneStatus.Pending;
     }
 
-    public void SetBillableAmount(Money billableAmount)
+    internal void SetBillableAmount(Money billableAmount)
     {
         ArgumentNullException.ThrowIfNull(billableAmount, nameof(billableAmount));
         if (billableAmount.IsNegative)
@@ -45,12 +45,12 @@ public sealed class ProjectMilestone : BaseEntity
         BillableAmount = billableAmount;
     }
 
-    public void SetAcceptanceCriteria(string? criteria) =>
+    internal void SetAcceptanceCriteria(string? criteria) =>
         AcceptanceCriteria = string.IsNullOrWhiteSpace(criteria) ? null : criteria.Trim();
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void Achieve(DateOnly achievedOn)
+    internal void Achieve(DateOnly achievedOn)
     {
         if (Status != MilestoneStatus.Pending)
             throw new InvalidOperationException($"A milestone in state {Status} cannot be achieved.");
@@ -59,7 +59,7 @@ public sealed class ProjectMilestone : BaseEntity
         Raise(new ProjectMilestoneAchieved(Id, ProjectId, achievedOn));
     }
 
-    public void Bill(Guid invoiceId)
+    internal void Bill(Guid invoiceId)
     {
         if (Status is not (MilestoneStatus.Achieved or MilestoneStatus.AchievedLate))
             throw new InvalidOperationException("Only an achieved milestone can be billed.");
@@ -69,7 +69,7 @@ public sealed class ProjectMilestone : BaseEntity
         Status = MilestoneStatus.Billed;
     }
 
-    public void Miss(string reason)
+    internal void Miss(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         if (Status != MilestoneStatus.Pending)

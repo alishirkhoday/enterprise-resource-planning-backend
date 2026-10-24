@@ -27,17 +27,17 @@ public sealed class SupplierContact : BaseEntity
         FullName = fullName.Trim();
     }
 
-    public void SetContactInformation(string? mobilePhoneNumber, string? email, string? extension)
+    internal void SetContactInformation(string? mobilePhoneNumber, string? email, string? extension)
     {
         MobilePhoneNumber = string.IsNullOrWhiteSpace(mobilePhoneNumber) ? null : mobilePhoneNumber.Trim();
         Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
         Extension = string.IsNullOrWhiteSpace(extension) ? null : extension.Trim();
     }
 
-    public void SetJobTitle(string? jobTitle) => JobTitle = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle.Trim();
+    internal void SetJobTitle(string? jobTitle) => JobTitle = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle.Trim();
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void MarkAsPrimary() => IsPrimary = true;
-    public void UnmarkAsPrimary() => IsPrimary = false;
+    internal void MarkAsPrimary() => IsPrimary = true;
+    internal void UnmarkAsPrimary() => IsPrimary = false;
 }

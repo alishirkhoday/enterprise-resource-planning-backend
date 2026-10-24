@@ -69,15 +69,15 @@ namespace ERP.Application.UseCases.Modules.CustomersRelationshipManagement.Comma
                 // Priced and taxed exactly as the original was. A credit at today's price would
                 // return the customer a different amount from the one they paid.
                 var line = new InvoiceItem(creditNote, source.Item, lineNumber++, source.ItemUnitPrice, quantity, source.UnitOfMeasureId);
+                creditNote.AddItem(line);
 
                 if (source.TaxId is not null)
-                    line.SetTax(source.TaxId.Value, source.TaxPercentage);
+                    creditNote.SetInvoiceItemTax(line.Id, source.TaxId.Value, source.TaxPercentage);
 
                 if (source.ItemBatchId is not null)
-                    line.SetBatch(source.ItemBatchId.Value);
+                    creditNote.SetInvoiceItemBatch(line.Id, source.ItemBatchId.Value);
 
-                line.SetDescription(source.Description);
-                creditNote.AddItem(line);
+                creditNote.SetInvoiceItemDescription(line.Id, source.Description);
             }
 
             // The header discount comes across too, so a partly discounted invoice is credited at

@@ -8,7 +8,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// Nearly every document belongs to one, and which one it belongs to decides whether it can be
 /// posted at all: a year that has been closed off takes nothing further.
 /// </summary>
-public sealed class FinancialYear : BaseEntity, IBranchScoped
+public sealed partial class FinancialYear : AggregateRoot, IBranchScoped
 {
     public string Title { get; private set; } = default!;
     public DateOnly StartDate { get; private set; }
@@ -31,16 +31,16 @@ public sealed class FinancialYear : BaseEntity, IBranchScoped
     public Guid? ClosingDocumentId { get; private set; }
 
     private readonly List<Document> _documents = [];
-    public IReadOnlyList<Document> Documents => _documents;
+    public IReadOnlyList<Document> Documents => _documents.AsReadOnly();
 
     private readonly List<AccountingPeriod> _periods = [];
-    public IReadOnlyList<AccountingPeriod> Periods => _periods;
+    public IReadOnlyList<AccountingPeriod> Periods => _periods.AsReadOnly();
 
     private FinancialYear() { }
 
     public FinancialYear(string title, DateOnly startDate, DateOnly endDate, string currencyCode = "IRR")
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode, nameof(currencyCode));
         if (endDate < startDate)
             throw new ArgumentOutOfRangeException(nameof(endDate), $"EndDate cannot be earlier than StartDate.");
@@ -61,7 +61,9 @@ public sealed class FinancialYear : BaseEntity, IBranchScoped
 
     public void AddPeriod(AccountingPeriod period)
     {
-        ArgumentNullException.ThrowIfNull(period, nameof(period));
+        ArgumentNullException.ThrowIfNull(period);
+        EnsureCanAddChild(period, period.FinancialYearId, _periods);
+
         if (_periods.Any(p => p.Number == period.Number))
             throw new InvalidOperationException($"Period number {period.Number} already exists in {Title}.");
         if (_periods.Any(p => p.Period.Overlaps(period.Period)))

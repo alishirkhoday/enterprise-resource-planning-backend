@@ -47,15 +47,15 @@ public sealed class ApprovalWorkflowStep : BaseEntity
         CanReject = true;
     }
 
-    public void SetMinimumAmount(decimal? minimumAmount)
+    internal void SetMinimumAmount(decimal? minimumAmount)
     {
         if (minimumAmount.HasValue)
             ArgumentOutOfRangeException.ThrowIfNegative(minimumAmount.Value, nameof(minimumAmount));
         MinimumAmount = minimumAmount;
     }
 
-    public void AllowRejection() => CanReject = true;
-    public void ForbidRejection() => CanReject = false;
+    internal void AllowRejection() => CanReject = true;
+    internal void ForbidRejection() => CanReject = false;
 
     /// <summary>Whether this step applies to a document of the given value.</summary>
     public bool AppliesTo(decimal amount) => MinimumAmount is null || amount >= MinimumAmount.Value;

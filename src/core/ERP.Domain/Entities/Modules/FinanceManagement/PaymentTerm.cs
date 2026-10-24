@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// When a debt falls due, and what discount is offered for paying early. Quotations, orders and
 /// invoices all inherit their due date from one of these.
 /// </summary>
-public sealed class PaymentTerm : BaseEntity
+public sealed class PaymentTerm : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -40,6 +40,8 @@ public sealed class PaymentTerm : BaseEntity
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         ArgumentOutOfRangeException.ThrowIfNegative(netDays, nameof(netDays));
+        if (DiscountDays > netDays)
+            throw new ArgumentOutOfRangeException(nameof(netDays), "The payment term cannot end before the discount window.");
         Name = name.Trim();
         NetDays = netDays;
     }

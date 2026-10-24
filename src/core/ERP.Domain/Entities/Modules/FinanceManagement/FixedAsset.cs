@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// Something the organization owns and uses over several years. Its cost is spread across those
 /// years through depreciation entries rather than being expensed when it is bought.
 /// </summary>
-public sealed class FixedAsset : BaseEntity, IBranchScoped
+public sealed partial class FixedAsset : AggregateRoot, IBranchScoped
 {
     public AssetCategory Category { get; private set; } = default!;
     public Guid CategoryId { get; private set; }
@@ -49,7 +49,7 @@ public sealed class FixedAsset : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<DepreciationEntry> _depreciationEntries = [];
-    public IReadOnlyList<DepreciationEntry> DepreciationEntries => _depreciationEntries;
+    public IReadOnlyList<DepreciationEntry> DepreciationEntries => _depreciationEntries.AsReadOnly();
 
     private FixedAsset() { }
 
@@ -172,14 +172,17 @@ public sealed class FixedAsset : BaseEntity, IBranchScoped
 
     public void AddDepreciationEntry(DepreciationEntry entry)
     {
-        ArgumentNullException.ThrowIfNull(entry, nameof(entry));
+        ArgumentNullException.ThrowIfNull(entry);
+        EnsureCanAddChild(entry, entry.AssetId, _depreciationEntries);
+
         if (Status != FixedAssetStatus.InService)
             throw new InvalidOperationException($"Depreciation can only be charged while the asset is in service; this one is {Status}.");
         if (_depreciationEntries.Any(e => e.Period.Overlaps(entry.Period)))
             throw new InvalidOperationException("Depreciation has already been charged for an overlapping period.");
 
+        var accumulatedDepreciation = AccumulatedDepreciation.Add(entry.Amount);
         _depreciationEntries.Add(entry);
-        AccumulatedDepreciation = AccumulatedDepreciation.Add(entry.Amount);
+        AccumulatedDepreciation = accumulatedDepreciation;
 
         if (BookValue.Amount <= SalvageValue.Amount)
             Status = FixedAssetStatus.FullyDepreciated;

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// A sales quota for a period, set against a person, a team or a territory, and tracked against
 /// what was actually sold.
 /// </summary>
-public sealed class SalesTarget : BaseEntity, IBranchScoped
+public sealed class SalesTarget : AggregateRoot, IBranchScoped
 {
     public string Title { get; private set; } = default!;
     public SalesTargetScope Scope { get; private set; }

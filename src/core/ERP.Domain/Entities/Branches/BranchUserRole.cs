@@ -7,7 +7,7 @@ namespace ERP.Domain.Entities.Branches;
 /// A role somebody holds in one particular branch. The same person can be a manager in one
 /// branch and an ordinary user in another, which a role on the user alone cannot express.
 /// </summary>
-public sealed class BranchUserRole : BaseEntity
+public sealed class BranchUserRole : AggregateRoot
 {
     public Branch Branch { get; private set; } = default!;
     public Guid BranchId { get; private set; }

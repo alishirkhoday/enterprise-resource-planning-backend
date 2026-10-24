@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.OrderManagement;
 /// An agreement to pay for an order over time, with a schedule that is laid out once and then
 /// paid down instalment by instalment.
 /// </summary>
-public sealed class InstallmentPlan : BaseEntity
+public sealed partial class InstallmentPlan : AggregateRoot
 {
     public Order Order { get; private set; } = default!;
     public Guid OrderId { get; private set; }
@@ -25,7 +25,7 @@ public sealed class InstallmentPlan : BaseEntity
     public Money OutstandingAmount => TotalPayable.Subtract(PaidAmount);
 
     private readonly List<Installment> _installments = [];
-    public IReadOnlyList<Installment> Installments => _installments;
+    public IReadOnlyList<Installment> Installments => _installments.AsReadOnly();
 
     private InstallmentPlan() { }
 
@@ -34,6 +34,7 @@ public sealed class InstallmentPlan : BaseEntity
         ArgumentNullException.ThrowIfNull(order, nameof(order));
         ArgumentNullException.ThrowIfNull(totalAmount, nameof(totalAmount));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(installmentCount, nameof(installmentCount));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(installmentCount, short.MaxValue, nameof(installmentCount));
         if (!totalAmount.IsPositive)
             throw new ArgumentOutOfRangeException(nameof(totalAmount), "A plan must cover a positive amount.");
 
@@ -80,12 +81,15 @@ public sealed class InstallmentPlan : BaseEntity
         var perInstallment = financedTotal.Divide(InstallmentCount).Round(0);
         var allocated = Money.Zero(TotalAmount.CurrencyCode);
 
+        var schedule = new List<Installment>();
         for (var index = 1; index <= InstallmentCount; index++)
         {
             var amount = index == InstallmentCount ? financedTotal.Subtract(allocated) : perInstallment;
             allocated = allocated.Add(amount);
-            _installments.Add(new Installment(this, (short)index, FirstDueDate.AddMonths(index - 1), amount));
+            schedule.Add(new Installment(this, (short)index, FirstDueDate.AddMonths(index - 1), amount));
         }
+
+        _installments.AddRange(schedule);
 
         PaidAmount = DownPayment;
         Status = InstallmentPlanStatus.Active;

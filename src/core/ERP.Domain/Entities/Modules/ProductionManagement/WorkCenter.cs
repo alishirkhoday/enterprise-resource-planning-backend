@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// A grouping of machines and people that performs one kind of operation, with a capacity and a
 /// cost per hour. Routings schedule against work centres, not against individual machines.
 /// </summary>
-public sealed class WorkCenter : BaseEntity, IBranchScoped
+public sealed class WorkCenter : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -28,17 +28,14 @@ public sealed class WorkCenter : BaseEntity, IBranchScoped
     public bool IsActive { get; private set; }
 
     private readonly List<Machine> _machines = [];
-    public IReadOnlyList<Machine> Machines => _machines;
+    public IReadOnlyList<Machine> Machines => _machines.AsReadOnly();
 
     private WorkCenter() { }
 
     public WorkCenter(string code, string name, int capacity = 1, decimal dailyCapacityHours = 8m)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity, nameof(capacity));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dailyCapacityHours, nameof(dailyCapacityHours));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(dailyCapacityHours, 24m, nameof(dailyCapacityHours));
+        ValidateDetails(name, capacity, dailyCapacityHours);
 
         Code = code.Trim();
         Name = name.Trim();
@@ -50,9 +47,7 @@ public sealed class WorkCenter : BaseEntity, IBranchScoped
 
     public void Update(string name, int capacity, decimal dailyCapacityHours)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity, nameof(capacity));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dailyCapacityHours, nameof(dailyCapacityHours));
+        ValidateDetails(name, capacity, dailyCapacityHours);
         Name = name.Trim();
         Capacity = capacity;
         DailyCapacityHours = dailyCapacityHours;
@@ -100,4 +95,11 @@ public sealed class WorkCenter : BaseEntity, IBranchScoped
 
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+    private static void ValidateDetails(string name, int capacity, decimal dailyCapacityHours)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity, nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dailyCapacityHours, nameof(dailyCapacityHours));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(dailyCapacityHours, 24m, nameof(dailyCapacityHours));
+    }
 }

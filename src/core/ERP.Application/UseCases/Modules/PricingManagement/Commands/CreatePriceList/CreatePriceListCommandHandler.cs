@@ -54,10 +54,7 @@ namespace ERP.Application.UseCases.Modules.PricingManagement.Commands.CreatePric
                 if (built.IsFailure)
                     return Result.Failure<PriceListDto, Error>(built.Error);
 
-                foreach (var line in built.Value)
-                {
-                    priceList.AddItem(line);
-                }
+                priceList.SetItems(built.Value, replaceAll: true);
 
                 if (request.IsDefault)
                 {

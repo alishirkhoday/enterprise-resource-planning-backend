@@ -50,25 +50,13 @@ namespace ERP.Application.UseCases.Modules.PricingManagement.Mapping
         {
             ArgumentNullException.ThrowIfNull(dto, nameof(dto));
 
-            var line = new PriceListItem(
-                priceList,
-                item,
-                dto.UnitOfMeasureId,
-                Money.Create(dto.BasePrice, priceList.CurrencyCode),
-                dto.MinimumQuantity);
-
-            if (dto.DiscountPercentage is not null)
-                line.SetDiscount(Percentage.Create(dto.DiscountPercentage.Value));
-
-            if (dto.TaxPercentage is not null)
-                line.SetTax(dto.TaxId, Percentage.Create(dto.TaxPercentage.Value));
-
-            // Set last, because the domain checks it against the base price and would reject a
-            // floor that is only above the price until the discount is applied.
-            if (dto.MinimumPrice is not null)
-                line.SetMinimumPrice(Money.Create(dto.MinimumPrice.Value, priceList.CurrencyCode));
-
-            return line;
+            return new PriceListItem(
+                priceList, item, dto.UnitOfMeasureId,
+                Money.Create(dto.BasePrice, priceList.CurrencyCode), dto.MinimumQuantity,
+                dto.DiscountPercentage is null ? null : Percentage.Create(dto.DiscountPercentage.Value),
+                dto.TaxId,
+                dto.TaxPercentage is null ? null : Percentage.Create(dto.TaxPercentage.Value),
+                dto.MinimumPrice is null ? null : Money.Create(dto.MinimumPrice.Value, priceList.CurrencyCode));
         }
     }
 }

@@ -44,21 +44,21 @@ public sealed class HumanDependent : BaseEntity
         BirthDate = birthDate;
     }
 
-    public void SetNationalId(string nationalId)
+    internal void SetNationalId(string nationalId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(nationalId, nameof(nationalId));
         NationalId = NationalId.Create(nationalId);
     }
 
-    public void SetCoverage(bool isInsured, bool isTaxDependent)
+    internal void SetCoverage(bool isInsured, bool isTaxDependent)
     {
         IsInsured = isInsured;
         IsTaxDependent = isTaxDependent;
     }
 
-    public void MarkAsHavingSpecialNeeds() => HasSpecialNeeds = true;
+    internal void MarkAsHavingSpecialNeeds() => HasSpecialNeeds = true;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public int AgeOn(DateOnly date)
     {

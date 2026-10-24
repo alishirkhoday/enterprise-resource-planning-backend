@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A book of blank cheque leaves issued by the bank against one account. Tracking the range
 /// is what lets the organization notice a missing leaf.
 /// </summary>
-public sealed class ChequeBook : BaseEntity
+public sealed class ChequeBook : AggregateRoot
 {
     public BankBranchAccount BankBranchAccount { get; private set; } = default!;
     public Guid BankBranchAccountId { get; private set; }

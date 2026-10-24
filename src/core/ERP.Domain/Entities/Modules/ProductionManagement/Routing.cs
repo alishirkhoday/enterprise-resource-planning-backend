@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// The ordered set of operations that turns materials into one item. Together with the bill of
 /// materials it is what a production order is expanded from.
 /// </summary>
-public sealed class Routing : BaseEntity
+public sealed partial class Routing : AggregateRoot
 {
     public Item Item { get; private set; } = default!;
     public Guid ItemId { get; private set; }
@@ -25,7 +25,7 @@ public sealed class Routing : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<RoutingOperation> _operations = [];
-    public IReadOnlyList<RoutingOperation> Operations => _operations;
+    public IReadOnlyList<RoutingOperation> Operations => _operations.AsReadOnly();
 
     private Routing() { }
 
@@ -51,7 +51,9 @@ public sealed class Routing : BaseEntity
 
     public void AddOperation(RoutingOperation operation)
     {
-        ArgumentNullException.ThrowIfNull(operation, nameof(operation));
+        ArgumentNullException.ThrowIfNull(operation);
+        EnsureCanAddChild(operation, operation.RoutingId, _operations);
+
         EnsureDraft();
         if (_operations.Any(o => o.SequenceNumber == operation.SequenceNumber))
             throw new InvalidOperationException($"Operation {operation.SequenceNumber} already exists on this routing.");

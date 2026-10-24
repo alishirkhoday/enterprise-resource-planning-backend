@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// A priced offer made to a customer, valid for a period. Accepting it is what a sale order is
 /// normally built from.
 /// </summary>
-public sealed class Quotation : BaseEntity, IBranchScoped
+public sealed partial class Quotation : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -37,7 +37,7 @@ public sealed class Quotation : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<QuotationItem> _items = [];
-    public IReadOnlyList<QuotationItem> Items => _items;
+    public IReadOnlyList<QuotationItem> Items => _items.AsReadOnly();
 
     private Quotation() { }
 
@@ -98,7 +98,9 @@ public sealed class Quotation : BaseEntity, IBranchScoped
 
     public void AddItem(QuotationItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.QuotationId, _items);
+
         EnsureDraft();
         if (item.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Quotation lines must be priced in {CurrencyCode}.");
@@ -107,6 +109,10 @@ public sealed class Quotation : BaseEntity, IBranchScoped
 
     public void RemoveItem(QuotationItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.QuotationId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);

@@ -34,16 +34,16 @@ public sealed class UserActivityHistory : BaseEntity
         OccurredOn = DateTimeOffset.UtcNow;
     }
 
-    public void SetRequestContext(string? internetProtocolAddress, string? userAgent, string? deviceName)
+    internal void SetRequestContext(string? internetProtocolAddress, string? userAgent, string? deviceName)
     {
         InternetProtocolAddress = internetProtocolAddress;
         UserAgent = userAgent;
         DeviceName = deviceName;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void SetReference(string referenceType, string referenceId)
+    internal void SetReference(string referenceType, string referenceId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(referenceType, nameof(referenceType));
         ArgumentException.ThrowIfNullOrWhiteSpace(referenceId, nameof(referenceId));

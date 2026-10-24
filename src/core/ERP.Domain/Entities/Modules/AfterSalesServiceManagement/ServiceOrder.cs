@@ -11,7 +11,7 @@ namespace ERP.Domain.Entities.Modules.AfterSalesServiceManagement;
 /// how service revenue quietly disappears.
 /// </para>
 /// </summary>
-public sealed class ServiceOrder : BaseEntity, IBranchScoped
+public sealed partial class ServiceOrder : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -56,7 +56,7 @@ public sealed class ServiceOrder : BaseEntity, IBranchScoped
     public string? CancellationReason { get; private set; }
 
     private readonly List<ServiceOrderPart> _parts = [];
-    public IReadOnlyList<ServiceOrderPart> Parts => _parts;
+    public IReadOnlyList<ServiceOrderPart> Parts => _parts.AsReadOnly();
 
     private ServiceOrder() { }
 
@@ -148,7 +148,9 @@ public sealed class ServiceOrder : BaseEntity, IBranchScoped
 
     public void AddPart(ServiceOrderPart part)
     {
-        ArgumentNullException.ThrowIfNull(part, nameof(part));
+        ArgumentNullException.ThrowIfNull(part);
+        EnsureCanAddChild(part, part.ServiceOrderId, _parts);
+
         EnsureOpen();
         if (part.UnitPrice.CurrencyCode != CurrencyCode)
             throw new InvalidOperationException($"Parts on this order must be priced in {CurrencyCode}.");
@@ -157,6 +159,10 @@ public sealed class ServiceOrder : BaseEntity, IBranchScoped
 
     public void RemovePart(ServiceOrderPart part)
     {
+        ArgumentNullException.ThrowIfNull(part);
+        if (part.ServiceOrderId != Id || !_parts.Contains(part))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(part, nameof(part));
         EnsureOpen();
         _parts.Remove(part);

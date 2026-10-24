@@ -10,7 +10,7 @@ namespace ERP.Domain.Entities.Integration;
 /// identifier and refusing a second row for it is what stops one payment being credited twice.
 /// </para>
 /// </summary>
-public sealed class InboxMessage : BaseEntity
+public sealed class InboxMessage : AggregateRoot
 {
     public IntegrationSource Source { get; private set; }
 

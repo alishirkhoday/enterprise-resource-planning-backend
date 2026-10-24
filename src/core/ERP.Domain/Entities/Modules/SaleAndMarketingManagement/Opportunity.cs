@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// A deal being worked on, with a value and a probability that together give the weighted
 /// pipeline. It belongs either to an existing customer or to the lead it came from.
 /// </summary>
-public sealed class Opportunity : BaseEntity, IBranchScoped
+public sealed class Opportunity : AggregateRoot, IBranchScoped
 {
     public string Title { get; private set; } = default!;
     public OpportunityStage Stage { get; private set; }
@@ -77,6 +77,8 @@ public sealed class Opportunity : BaseEntity, IBranchScoped
         EnsureOpen();
         ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(estimatedValue, nameof(estimatedValue));
+        if (estimatedValue.IsNegative)
+            throw new ArgumentOutOfRangeException(nameof(estimatedValue), "An opportunity cannot have a negative value.");
         Title = title.Trim();
         EstimatedValue = estimatedValue;
         ExpectedCloseDate = expectedCloseDate;

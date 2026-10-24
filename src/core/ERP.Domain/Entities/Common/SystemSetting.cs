@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Common;
 /// A single configurable parameter of the installation, such as the default currency or the
 /// number of days an invoice stays open. Values are stored as text and interpreted by <see cref="ValueType"/>.
 /// </summary>
-public sealed class SystemSetting : BaseEntity, IBranchScoped
+public sealed class SystemSetting : AggregateRoot, IBranchScoped
 {
     /// <summary>Dotted key, for example Finance.DefaultCurrency.</summary>
     public string Key { get; private set; } = default!;

@@ -55,9 +55,9 @@ public sealed class StockTransferOrderItem : BaseEntity
         UnitCost = unitCost;
     }
 
-    public void SetBatch(Guid itemBatchId) => ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
+    internal void SetBatch(Guid itemBatchId) => ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
 
-    public void SetStorageLocations(Guid? sourceStorageLocationId, Guid? destinationStorageLocationId)
+    internal void SetStorageLocations(Guid? sourceStorageLocationId, Guid? destinationStorageLocationId)
     {
         SourceStorageLocationId = sourceStorageLocationId == Guid.Empty ? null : sourceStorageLocationId;
         DestinationStorageLocationId = destinationStorageLocationId == Guid.Empty ? null : destinationStorageLocationId;
@@ -72,7 +72,7 @@ public sealed class StockTransferOrderItem : BaseEntity
     /// is the whole point: a transfer must not change what the goods are worth.
     /// </para>
     /// </summary>
-    public void SetUnitCost(Money unitCost)
+    internal void SetUnitCost(Money unitCost)
     {
         ArgumentNullException.ThrowIfNull(unitCost, nameof(unitCost));
         if (unitCost.CurrencyCode != UnitCost.CurrencyCode)
@@ -84,7 +84,7 @@ public sealed class StockTransferOrderItem : BaseEntity
         UnitCost = unitCost;
     }
 
-    public void Dispatch(decimal quantity)
+    internal void Dispatch(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (quantity > RequestedQuantity)
@@ -92,7 +92,7 @@ public sealed class StockTransferOrderItem : BaseEntity
         DispatchedQuantity = quantity;
     }
 
-    public void Receive(decimal quantity)
+    internal void Receive(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(quantity, nameof(quantity));
         if (quantity > DispatchedQuantity)
@@ -100,7 +100,7 @@ public sealed class StockTransferOrderItem : BaseEntity
         ReceivedQuantity = quantity;
     }
 
-    public void ExplainDiscrepancy(string reason)
+    internal void ExplainDiscrepancy(string reason)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason, nameof(reason));
         DiscrepancyReason = reason.Trim();

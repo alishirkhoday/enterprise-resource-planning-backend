@@ -5,7 +5,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// This is the inventory card: every receipt, issue and adjustment writes exactly one entry, and
 /// the balance is never edited in place.
 /// </summary>
-public sealed class StockLedgerEntry : BaseEntity
+public sealed class StockLedgerEntry : AggregateRoot
 {
     public Item Item { get; private set; } = default!;
     public Guid ItemId { get; private set; }

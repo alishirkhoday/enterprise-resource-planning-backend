@@ -65,24 +65,24 @@ public sealed class PurchaseOrderItem : BaseEntity
         TaxPercentage = Percentage.Zero();
     }
 
-    public void SetDiscount(Percentage discountPercentage)
+    internal void SetDiscount(Percentage discountPercentage)
     {
         ArgumentNullException.ThrowIfNull(discountPercentage, nameof(discountPercentage));
         DiscountPercentage = discountPercentage;
     }
 
-    public void SetTax(Guid taxId, Percentage taxPercentage)
+    internal void SetTax(Guid taxId, Percentage taxPercentage)
     {
         ArgumentNullException.ThrowIfNull(taxPercentage, nameof(taxPercentage));
         TaxId = taxId == Guid.Empty ? null : taxId;
         TaxPercentage = taxPercentage;
     }
 
-    public void SetExpectedDeliveryDate(DateOnly expectedDeliveryDate) => ExpectedDeliveryDate = expectedDeliveryDate;
+    internal void SetExpectedDeliveryDate(DateOnly expectedDeliveryDate) => ExpectedDeliveryDate = expectedDeliveryDate;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void ChangeQuantity(decimal quantity)
+    internal void ChangeQuantity(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (quantity < ReceivedQuantity)
@@ -91,7 +91,7 @@ public sealed class PurchaseOrderItem : BaseEntity
     }
 
     /// <summary>Records an arrival, refusing to take the line past what was ordered.</summary>
-    public void Receive(decimal quantity)
+    internal void Receive(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (ReceivedQuantity + quantity > Quantity)
@@ -99,7 +99,7 @@ public sealed class PurchaseOrderItem : BaseEntity
         ReceivedQuantity += quantity;
     }
 
-    public void ReverseReceipt(decimal quantity)
+    internal void ReverseReceipt(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (quantity > ReceivedQuantity)
@@ -107,7 +107,7 @@ public sealed class PurchaseOrderItem : BaseEntity
         ReceivedQuantity -= quantity;
     }
 
-    public void Invoice(decimal quantity)
+    internal void Invoice(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (InvoicedQuantity + quantity > Quantity)

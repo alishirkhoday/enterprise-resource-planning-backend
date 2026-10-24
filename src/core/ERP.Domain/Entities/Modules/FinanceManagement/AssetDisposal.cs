@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// The removal of an asset from the books, and the gain or loss it produced.
 /// </summary>
-public sealed class AssetDisposal : BaseEntity
+public sealed class AssetDisposal : AggregateRoot
 {
     public FixedAsset Asset { get; private set; } = default!;
     public Guid AssetId { get; private set; }

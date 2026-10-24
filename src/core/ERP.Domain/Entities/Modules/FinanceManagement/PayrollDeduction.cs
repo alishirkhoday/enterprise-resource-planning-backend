@@ -36,5 +36,5 @@ public sealed class PayrollDeduction : BaseEntity
         AppliedAmount = appliedAmount;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

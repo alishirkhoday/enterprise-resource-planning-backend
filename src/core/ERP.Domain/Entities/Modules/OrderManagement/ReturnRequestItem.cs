@@ -51,7 +51,7 @@ public sealed class ReturnRequestItem : BaseEntity
         UnitPrice = orderItem.ItemUnitPrice;
     }
 
-    public void Inspect(decimal acceptedQuantity, ReturnItemCondition condition, string? notes = null)
+    internal void Inspect(decimal acceptedQuantity, ReturnItemCondition condition, string? notes = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(acceptedQuantity, nameof(acceptedQuantity));
         if (acceptedQuantity > RequestedQuantity)
@@ -61,7 +61,7 @@ public sealed class ReturnRequestItem : BaseEntity
         Description = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
     }
 
-    public void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
+    internal void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
     {
         ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
         SerialNumberId = serialNumberId == Guid.Empty ? null : serialNumberId;

@@ -3,7 +3,7 @@
 /// <summary>
 /// What is planned to run, where and when.
 /// </summary>
-public sealed class ProductionSchedule : BaseEntity
+public sealed class ProductionSchedule : AggregateRoot
 {
     public ProductionOrder Order { get; private set; } = default!;
     public WorkStation WorkStation { get; private set; } = default!;

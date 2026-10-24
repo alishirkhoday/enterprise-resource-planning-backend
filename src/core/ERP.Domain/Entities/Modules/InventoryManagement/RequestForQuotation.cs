@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// An invitation sent to several suppliers to quote for the same list of items, so their offers
 /// can be compared on equal terms.
 /// </summary>
-public sealed class RequestForQuotation : BaseEntity, IBranchScoped
+public sealed partial class RequestForQuotation : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
     public string Title { get; private set; } = default!;
@@ -21,10 +21,10 @@ public sealed class RequestForQuotation : BaseEntity, IBranchScoped
     public Guid? AwardedQuotationId { get; private set; }
 
     private readonly List<RequestForQuotationItem> _items = [];
-    public IReadOnlyList<RequestForQuotationItem> Items => _items;
+    public IReadOnlyList<RequestForQuotationItem> Items => _items.AsReadOnly();
 
     private readonly List<Supplier> _invitedSuppliers = [];
-    public IReadOnlyList<Supplier> InvitedSuppliers => _invitedSuppliers;
+    public IReadOnlyList<Supplier> InvitedSuppliers => _invitedSuppliers.AsReadOnly();
 
     private RequestForQuotation() { }
 
@@ -52,7 +52,9 @@ public sealed class RequestForQuotation : BaseEntity, IBranchScoped
 
     public void AddItem(RequestForQuotationItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.RequestId, _items);
+
         EnsureDraft();
         _items.Add(item);
     }

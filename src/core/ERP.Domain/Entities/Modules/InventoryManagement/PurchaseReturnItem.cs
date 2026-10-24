@@ -43,11 +43,11 @@ public sealed class PurchaseReturnItem : BaseEntity
         UnitPrice = unitPrice;
     }
 
-    public void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
+    internal void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
     {
         ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
         SerialNumberId = serialNumberId == Guid.Empty ? null : serialNumberId;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

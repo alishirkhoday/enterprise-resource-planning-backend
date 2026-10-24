@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.OrderManagement;
 /// A customer stored balance. The balance is kept alongside the transactions that produced it,
 /// so it can always be proved.
 /// </summary>
-public sealed class Wallet : BaseEntity
+public sealed partial class Wallet : AggregateRoot
 {
     public Customer Customer { get; private set; } = default!;
     public Guid CustomerId { get; private set; }
@@ -23,7 +23,7 @@ public sealed class Wallet : BaseEntity
     public Guid? DetailAccountId { get; private set; }
 
     private readonly List<WalletTransaction> _transactions = [];
-    public IReadOnlyList<WalletTransaction> Transactions => _transactions;
+    public IReadOnlyList<WalletTransaction> Transactions => _transactions.AsReadOnly();
 
     private Wallet() { }
 
@@ -44,7 +44,9 @@ public sealed class Wallet : BaseEntity
 
     public void Credit(WalletTransaction transaction)
     {
-        ArgumentNullException.ThrowIfNull(transaction, nameof(transaction));
+        ArgumentNullException.ThrowIfNull(transaction);
+        EnsureCanAddChild(transaction, transaction.WalletId, _transactions);
+
         EnsureActive();
         EnsureSameCurrency(transaction.Amount);
         if (!transaction.IsCredit)
@@ -57,7 +59,9 @@ public sealed class Wallet : BaseEntity
 
     public void Debit(WalletTransaction transaction)
     {
-        ArgumentNullException.ThrowIfNull(transaction, nameof(transaction));
+        ArgumentNullException.ThrowIfNull(transaction);
+        EnsureCanAddChild(transaction, transaction.WalletId, _transactions);
+
         EnsureActive();
         EnsureSameCurrency(transaction.Amount);
         if (transaction.IsCredit)

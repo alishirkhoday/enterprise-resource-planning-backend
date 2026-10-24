@@ -14,21 +14,27 @@ public sealed class ShipToAddress : ValueObject
 
     private ShipToAddress() { }
 
-    public ShipToAddress(Address address, string receiverFullName, string receiverMobileNumber)
+    public ShipToAddress(Address address, string receiverFullName, string receiverMobileNumber,
+        string? receiverNationalId = null, string? deliveryInstruction = null)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
         ArgumentException.ThrowIfNullOrWhiteSpace(receiverFullName, nameof(receiverFullName));
         ArgumentException.ThrowIfNullOrWhiteSpace(receiverMobileNumber, nameof(receiverMobileNumber));
-        Address = address;
+        Address = address.Copy();
         ReceiverFullName = receiverFullName.Trim();
         ReceiverMobileNumber = receiverMobileNumber.Trim();
+        ReceiverNationalId = string.IsNullOrWhiteSpace(receiverNationalId) ? null : receiverNationalId.Trim();
+        DeliveryInstruction = string.IsNullOrWhiteSpace(deliveryInstruction) ? null : deliveryInstruction.Trim();
     }
 
-    public void SetReceiverNationalId(string? nationalId) =>
-        ReceiverNationalId = string.IsNullOrWhiteSpace(nationalId) ? null : nationalId.Trim();
+    internal ShipToAddress Copy() =>
+        new(Address, ReceiverFullName, ReceiverMobileNumber, ReceiverNationalId, DeliveryInstruction);
 
-    public void SetDeliveryInstruction(string? instruction) =>
-        DeliveryInstruction = string.IsNullOrWhiteSpace(instruction) ? null : instruction.Trim();
+    public ShipToAddress WithReceiverNationalId(string? nationalId) =>
+        new(Address, ReceiverFullName, ReceiverMobileNumber, nationalId, DeliveryInstruction);
+
+    public ShipToAddress WithDeliveryInstruction(string? instruction) =>
+        new(Address, ReceiverFullName, ReceiverMobileNumber, ReceiverNationalId, instruction);
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {
@@ -36,5 +42,6 @@ public sealed class ShipToAddress : ValueObject
         yield return ReceiverFullName;
         yield return ReceiverMobileNumber;
         yield return ReceiverNationalId;
+        yield return DeliveryInstruction;
     }
 }

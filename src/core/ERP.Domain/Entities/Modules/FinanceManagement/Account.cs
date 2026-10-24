@@ -8,7 +8,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// summed. The code is not free text either: each type owns a block of the numbering, which is
 /// what lets a trial balance be ordered and subtotalled by reading codes alone.
 /// </summary>
-public sealed class Account : BaseEntity
+public sealed partial class Account : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -35,17 +35,17 @@ public sealed class Account : BaseEntity
     public Guid? ParentId { get; private set; }
 
     private readonly List<Account> _children = [];
-    public IReadOnlyList<Account> Children => _children;
+    public IReadOnlyList<Account> Children => _children.AsReadOnly();
 
     private readonly List<AccountDetailGroup> _detailGroups = [];
-    public IReadOnlyList<AccountDetailGroup> DetailGroups => _detailGroups;
+    public IReadOnlyList<AccountDetailGroup> DetailGroups => _detailGroups.AsReadOnly();
 
     private Account() { }
 
     public Account(string code, string name, AccountType type, AccountGroup group, AccountBalance balance, FinancialStatement financialStatement, bool isFinal, Account? parent = null, bool isSystematic = false)
     {
-        ArgumentException.ThrowIfNullOrEmpty(code, nameof(code));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Code = code.Trim();
         Name = name.Trim();
         Type = type;
@@ -112,8 +112,8 @@ public sealed class Account : BaseEntity
 
     public void Update(string code, string name, AccountType type, AccountGroup group, AccountBalance balance, FinancialStatement financialStatement, bool isFinal, Account? parent = null)
     {
-        ArgumentException.ThrowIfNullOrEmpty(code, nameof(code));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         if (IsSystematic)
             throw new InvalidOperationException("A systematic account cannot be modified.");
         Code = code.Trim();

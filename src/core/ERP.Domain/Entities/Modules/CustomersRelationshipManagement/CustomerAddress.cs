@@ -22,19 +22,19 @@ public sealed class CustomerAddress : BaseEntity
         ArgumentNullException.ThrowIfNull(address, nameof(address));
         Customer = customer;
         CustomerId = customer.Id;
-        Address = address;
+        Address = address.Copy();
         Type = type;
     }
 
-    public void Update(Address address, CustomerAddressType type)
+    internal void Update(Address address, CustomerAddressType type)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
-        Address = address;
+        Address = address.Copy();
         Type = type;
     }
 
-    public void SetTitle(string? title) => Title = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
+    internal void SetTitle(string? title) => Title = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
 
-    public void SetDefault() => IsDefault = true;
-    public void UnsetDefault() => IsDefault = false;
+    internal void SetDefault() => IsDefault = true;
+    internal void UnsetDefault() => IsDefault = false;
 }

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// The tax carried by one business document, recorded separately from the document so a tax
 /// return can be assembled without re-reading every invoice.
 /// </summary>
-public sealed class TaxTransaction : BaseEntity, IBranchScoped
+public sealed class TaxTransaction : AggregateRoot, IBranchScoped
 {
     public Tax Tax { get; private set; } = default!;
     public Guid TaxId { get; private set; }

@@ -64,11 +64,6 @@ namespace ERP.Application.UseCases.Modules.CustomersRelationshipManagement.Comma
             if (lines.IsFailure)
                 return Result.Failure<InvoiceDto, Error>(lines.Error);
 
-            foreach (var line in lines.Value)
-            {
-                invoice.AddItem(line);
-            }
-
             if (request.AdditionalCharges > 0m)
                 invoice.SetAdditionalCharges(Money.Create(request.AdditionalCharges, currencyCode));
 
@@ -135,18 +130,19 @@ namespace ERP.Application.UseCases.Modules.CustomersRelationshipManagement.Comma
                     return Result.Failure<List<InvoiceItem>, Error>(price.Error);
 
                 var invoiceItem = new InvoiceItem(invoice, item, lineNumber++, price.Value, line.Quantity, line.UnitOfMeasureId);
+                invoice.AddItem(invoiceItem);
+                built.Add(invoiceItem);
 
                 if (line.DiscountPercentage is not null)
-                    invoiceItem.SetDiscountPercentage(Percentage.Create(line.DiscountPercentage.Value));
+                    invoice.SetInvoiceItemDiscountPercentage(invoiceItem.Id, Percentage.Create(line.DiscountPercentage.Value));
 
                 if (line.TaxId is not null && line.TaxPercentage is not null)
-                    invoiceItem.SetTax(line.TaxId.Value, Percentage.Create(line.TaxPercentage.Value));
+                    invoice.SetInvoiceItemTax(invoiceItem.Id, line.TaxId.Value, Percentage.Create(line.TaxPercentage.Value));
 
                 if (line.ItemBatchId is not null)
-                    invoiceItem.SetBatch(line.ItemBatchId.Value);
+                    invoice.SetInvoiceItemBatch(invoiceItem.Id, line.ItemBatchId.Value);
 
-                invoiceItem.SetDescription(line.Description);
-                built.Add(invoiceItem);
+                invoice.SetInvoiceItemDescription(invoiceItem.Id, line.Description);
             }
 
             return Result.Success<List<InvoiceItem>, Error>(built);

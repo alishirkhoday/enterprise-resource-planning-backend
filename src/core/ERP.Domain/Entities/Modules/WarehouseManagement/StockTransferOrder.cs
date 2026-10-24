@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.WarehouseManagement;
 /// A move of stock between two warehouses. It is two movements, not one: goods leave the source
 /// before they arrive at the destination, and the gap between is stock in transit.
 /// </summary>
-public sealed class StockTransferOrder : BaseEntity
+public sealed partial class StockTransferOrder : AggregateRoot
 {
     public string Number { get; private set; } = default!;
 
@@ -27,7 +27,7 @@ public sealed class StockTransferOrder : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<StockTransferOrderItem> _items = [];
-    public IReadOnlyList<StockTransferOrderItem> Items => _items;
+    public IReadOnlyList<StockTransferOrderItem> Items => _items.AsReadOnly();
 
     private StockTransferOrder() { }
 
@@ -66,7 +66,9 @@ public sealed class StockTransferOrder : BaseEntity
 
     public void AddItem(StockTransferOrderItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.TransferId, _items);
+
         EnsureDraft();
         _items.Add(item);
     }

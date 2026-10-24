@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Workflows;
 /// The ordered chain of approvals a document type has to pass. Defining it as data rather than
 /// code lets an organization change who signs off without a release.
 /// </summary>
-public sealed class ApprovalWorkflow : BaseEntity, IBranchScoped
+public sealed partial class ApprovalWorkflow : AggregateRoot, IBranchScoped
 {
     public string Key { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -17,7 +17,7 @@ public sealed class ApprovalWorkflow : BaseEntity, IBranchScoped
     public bool IsActive { get; private set; }
 
     private readonly List<ApprovalWorkflowStep> _steps = [];
-    public IReadOnlyList<ApprovalWorkflowStep> Steps => _steps;
+    public IReadOnlyList<ApprovalWorkflowStep> Steps => _steps.AsReadOnly();
 
     private ApprovalWorkflow() { }
 
@@ -43,7 +43,9 @@ public sealed class ApprovalWorkflow : BaseEntity, IBranchScoped
 
     public void AddStep(ApprovalWorkflowStep step)
     {
-        ArgumentNullException.ThrowIfNull(step, nameof(step));
+        ArgumentNullException.ThrowIfNull(step);
+        EnsureCanAddChild(step, step.WorkflowId, _steps);
+
         if (_steps.Any(s => s.Order == step.Order))
             throw new InvalidOperationException($"A step with order {step.Order} already exists in this workflow.");
         _steps.Add(step);

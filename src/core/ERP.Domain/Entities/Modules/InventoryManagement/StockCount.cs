@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// A physical count of what is actually in a warehouse, and the adjustments needed to make the
 /// books agree with it.
 /// </summary>
-public sealed class StockCount : BaseEntity, IBranchScoped
+public sealed partial class StockCount : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
     public Guid WarehouseId { get; private set; }
@@ -24,7 +24,7 @@ public sealed class StockCount : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<StockCountItem> _items = [];
-    public IReadOnlyList<StockCountItem> Items => _items;
+    public IReadOnlyList<StockCountItem> Items => _items.AsReadOnly();
 
     private StockCount() { }
 
@@ -52,7 +52,9 @@ public sealed class StockCount : BaseEntity, IBranchScoped
 
     public void AddItem(StockCountItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.CountId, _items);
+
         if (Status is not (StockCountStatus.Planned or StockCountStatus.InProgress))
             throw new InvalidOperationException($"Lines cannot be added while the count is {Status}.");
         if (_items.Any(i => i.ItemId == item.ItemId && i.ItemBatchId == item.ItemBatchId))

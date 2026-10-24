@@ -124,12 +124,12 @@ namespace ERP.Application.UseCases.Modules.FinanceManagement.Commands.SettleAcco
                 try
                 {
                     var allocation = new SettlementAllocation(settlement, lineAmount, line.ReceivableId, line.PayableId);
+                    settlement.Allocate(allocation);
 
                     if (line.DiscountTaken is not null)
-                        allocation.SetDiscountTaken(Money.Create(line.DiscountTaken.Value, currencyCode));
+                        settlement.SetSettlementAllocationDiscountTaken(allocation.Id, Money.Create(line.DiscountTaken.Value, currencyCode));
 
-                    allocation.SetDescription(line.Description);
-                    settlement.Allocate(allocation);
+                    settlement.SetSettlementAllocationDescription(allocation.Id, line.Description);
                 }
                 catch (Exception exception) when (exception is ArgumentException or ArgumentOutOfRangeException or InvalidOperationException)
                 {

@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.CustomersRelationshipManagement;
 /// <summary>
 /// A segment customers are grouped into, so pricing and terms can be set once for the whole group.
 /// </summary>
-public sealed class CustomerGroup : BaseEntity
+public sealed class CustomerGroup : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -17,7 +17,7 @@ public sealed class CustomerGroup : BaseEntity
     public Guid? ParentId { get; private set; }
 
     private readonly List<CustomerGroup> _children = [];
-    public IReadOnlyList<CustomerGroup> Children => _children;
+    public IReadOnlyList<CustomerGroup> Children => _children.AsReadOnly();
 
     public bool IsActive { get; private set; }
 

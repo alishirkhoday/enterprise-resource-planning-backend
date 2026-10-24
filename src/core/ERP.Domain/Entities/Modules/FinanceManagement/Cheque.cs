@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A cheque the organization holds or has issued. Its lifecycle is a chain of states rather than
 /// a single flag, because each transition is itself an accounting event.
 /// </summary>
-public sealed class Cheque : BaseEntity, IBranchScoped
+public sealed partial class Cheque : AggregateRoot, IBranchScoped
 {
     public ChequeType Type { get; private set; }
     public ChequeStatus Status { get; private set; }
@@ -46,7 +46,7 @@ public sealed class Cheque : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<ChequeOperation> _operations = [];
-    public IReadOnlyList<ChequeOperation> Operations => _operations;
+    public IReadOnlyList<ChequeOperation> Operations => _operations.AsReadOnly();
 
     private Cheque() { }
 

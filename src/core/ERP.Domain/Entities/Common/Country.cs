@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Common;
 /// <summary>
 /// A country, with the dialling prefix its phone numbers normalize against.
 /// </summary>
-public sealed class Country : BaseEntity
+public sealed class Country : AggregateRoot
 {
     /// <summary>ISO 3166-1 alpha-2 code, for example IR.</summary>
     public string Code { get; private set; } = default!;
@@ -15,7 +15,7 @@ public sealed class Country : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<Province> _provinces = [];
-    public IReadOnlyList<Province> Provinces => _provinces;
+    public IReadOnlyList<Province> Provinces => _provinces.AsReadOnly();
 
     private Country() { }
 

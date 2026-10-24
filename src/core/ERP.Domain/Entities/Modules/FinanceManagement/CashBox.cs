@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// A till holding physical cash, tied to the ledger account its balance is carried in.
 /// </summary>
-public sealed class CashBox : BaseEntity, IBranchScoped
+public sealed class CashBox : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;

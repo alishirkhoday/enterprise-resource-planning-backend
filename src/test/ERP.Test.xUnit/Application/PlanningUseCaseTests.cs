@@ -183,8 +183,8 @@ namespace ERP.Test.xUnit.Application
             var plan = new MaterialRequirementPlan("MRP-1", DateRange.Create(new DateOnly(2026, 3, 1), new DateOnly(2026, 6, 30)));
 
             var line = new MaterialRequirementPlanLine(plan, item, new DateOnly(2026, 6, 30), 100m, 0m, 0m, Guid.NewGuid());
-            line.Suggest(action, 100m, leadTimeDays: 14);
             plan.AddLine(line);
+            line.Plan.SuggestMaterialRequirementPlanLine(line.Id, action, 100m, leadTimeDays: 14);
             plan.Complete();
 
             return plan;

@@ -54,7 +54,7 @@ public sealed class WarehouseTransactionItem : BaseEntity
         UnitCost = unitCost;
     }
 
-    public void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
+    internal void SetTracking(Guid? itemBatchId, Guid? serialNumberId)
     {
         if (itemBatchId is not null && Item.TrackingType != ItemTrackingType.Batch)
             throw new InvalidOperationException($"Item {Item.Name} is not batch tracked.");
@@ -64,13 +64,13 @@ public sealed class WarehouseTransactionItem : BaseEntity
         SerialNumberId = serialNumberId == Guid.Empty ? null : serialNumberId;
     }
 
-    public void SetStorageLocations(Guid? sourceStorageLocationId, Guid? destinationStorageLocationId)
+    internal void SetStorageLocations(Guid? sourceStorageLocationId, Guid? destinationStorageLocationId)
     {
         SourceStorageLocationId = sourceStorageLocationId == Guid.Empty ? null : sourceStorageLocationId;
         DestinationStorageLocationId = destinationStorageLocationId == Guid.Empty ? null : destinationStorageLocationId;
     }
 
-    public void SetUnitCost(Money unitCost)
+    internal void SetUnitCost(Money unitCost)
     {
         ArgumentNullException.ThrowIfNull(unitCost, nameof(unitCost));
         if (unitCost.IsNegative)
@@ -78,7 +78,7 @@ public sealed class WarehouseTransactionItem : BaseEntity
         UnitCost = unitCost;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     /// <summary>Whether the tracking identifiers this item demands have been supplied.</summary>
     public bool IsTrackingComplete => Item.TrackingType switch

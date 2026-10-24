@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.SaleAndMarketingManagement;
 /// Something someone has to do, or has done, about a customer, a lead or a deal. It is the
 /// shared to do list of the sales side, which lead interactions alone could not cover.
 /// </summary>
-public sealed class Activity : BaseEntity, IBranchScoped
+public sealed class Activity : AggregateRoot, IBranchScoped
 {
     public string Subject { get; private set; } = default!;
     public ActivityType Type { get; private set; }

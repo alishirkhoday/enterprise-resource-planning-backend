@@ -50,11 +50,6 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.CreatePu
             if (lines.IsFailure)
                 return Result.Failure<PurchaseOrderDto, Error>(lines.Error);
 
-            foreach (var line in lines.Value)
-            {
-                order.AddItem(line);
-            }
-
             if (request.ExpectedDeliveryDate is not null)
                 order.SetExpectedDeliveryDate(request.ExpectedDeliveryDate.Value);
 
@@ -107,18 +102,19 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.CreatePu
                     return Result.Failure<List<PurchaseOrderItem>, Error>(price.Error);
 
                 var orderItem = new PurchaseOrderItem(order, item, lineNumber++, line.Quantity, line.UnitOfMeasureId, price.Value);
+                order.AddItem(orderItem);
+                built.Add(orderItem);
 
                 if (line.DiscountPercentage is not null)
-                    orderItem.SetDiscount(Percentage.Create(line.DiscountPercentage.Value));
+                    order.SetPurchaseOrderItemDiscount(orderItem.Id, Percentage.Create(line.DiscountPercentage.Value));
 
                 if (line.TaxId is not null && line.TaxPercentage is not null)
-                    orderItem.SetTax(line.TaxId.Value, Percentage.Create(line.TaxPercentage.Value));
+                    order.SetPurchaseOrderItemTax(orderItem.Id, line.TaxId.Value, Percentage.Create(line.TaxPercentage.Value));
 
                 if (line.ExpectedDeliveryDate is not null)
-                    orderItem.SetExpectedDeliveryDate(line.ExpectedDeliveryDate.Value);
+                    order.SetPurchaseOrderItemExpectedDeliveryDate(orderItem.Id, line.ExpectedDeliveryDate.Value);
 
-                orderItem.SetDescription(line.Description);
-                built.Add(orderItem);
+                order.SetPurchaseOrderItemDescription(orderItem.Id, line.Description);
             }
 
             return Result.Success<List<PurchaseOrderItem>, Error>(built);

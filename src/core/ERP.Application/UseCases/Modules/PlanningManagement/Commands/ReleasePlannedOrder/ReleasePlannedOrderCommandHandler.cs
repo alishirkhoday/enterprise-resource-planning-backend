@@ -51,7 +51,7 @@ namespace ERP.Application.UseCases.Modules.PlanningManagement.Commands.ReleasePl
                     : "PurchaseRequisition";
 
                 var referenceId = Guid.NewGuid().ToString();
-                line.MarkAsReleased(referenceType, referenceId);
+                plan.MarkMaterialRequirementPlanLineAsReleased(line.Id, referenceType, referenceId);
 
                 released.Add(new ReleasedLineDto(
                     line.Id,

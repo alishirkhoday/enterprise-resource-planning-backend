@@ -108,6 +108,9 @@ namespace ERP.Infrastructure.MainDatabase.Context
 
                 // Domain events live only in memory; they are dispatched, not stored.
                 builder.Ignore(nameof(BaseEntity.DomainEvents));
+
+                foreach (var navigation in entityType.GetNavigations().Where(n => n.IsCollection && n.FieldInfo is not null))
+                    builder.Navigation(navigation.Name).UsePropertyAccessMode(PropertyAccessMode.Field);
             }
 
             // Column shapes and indexes are applied last, once every property the model will have

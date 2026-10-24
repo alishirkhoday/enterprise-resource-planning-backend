@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A receipt or a payment, and how it is spread across the open items it clears. Keeping the
 /// allocation explicit is what makes a partly paid invoice traceable to the money that paid it.
 /// </summary>
-public sealed class Settlement : BaseEntity, IBranchScoped
+public sealed partial class Settlement : AggregateRoot, IBranchScoped
 {
     public string? Number { get; private set; }
     public SettlementDirection Direction { get; private set; }
@@ -28,7 +28,7 @@ public sealed class Settlement : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<SettlementAllocation> _allocations = [];
-    public IReadOnlyList<SettlementAllocation> Allocations => _allocations;
+    public IReadOnlyList<SettlementAllocation> Allocations => _allocations.AsReadOnly();
 
     private Settlement() { }
 
@@ -82,7 +82,9 @@ public sealed class Settlement : BaseEntity, IBranchScoped
 
     public void Allocate(SettlementAllocation allocation)
     {
-        ArgumentNullException.ThrowIfNull(allocation, nameof(allocation));
+        ArgumentNullException.ThrowIfNull(allocation);
+        EnsureCanAddChild(allocation, allocation.SettlementId, _allocations);
+
         EnsureDraft();
         if (allocation.Amount.CurrencyCode != Amount.CurrencyCode)
             throw new InvalidOperationException($"The allocation must be expressed in {Amount.CurrencyCode}.");
@@ -93,6 +95,10 @@ public sealed class Settlement : BaseEntity, IBranchScoped
 
     public void RemoveAllocation(SettlementAllocation allocation)
     {
+        ArgumentNullException.ThrowIfNull(allocation);
+        if (allocation.SettlementId != Id || !_allocations.Contains(allocation))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(allocation, nameof(allocation));
         EnsureDraft();
         _allocations.Remove(allocation);

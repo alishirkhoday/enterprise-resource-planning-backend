@@ -95,7 +95,8 @@ namespace ERP.Test.xUnit.Domain
             var order = CreateOrder(ServiceOrderType.Warranty);
             var part = new ServiceOrderPart(order, CreateItem(), 1, 2m, Money.Create(500_000m, "IRR"), Unit);
 
-            Assert.Throws<InvalidOperationException>(part.MakeChargeable);
+            order.AddPart(part);
+            Assert.Throws<InvalidOperationException>(() => order.MakeServiceOrderPartChargeable(part.Id));
         }
 
         [Fact]
@@ -297,7 +298,7 @@ namespace ERP.Test.xUnit.Domain
 
             Assert.Throws<InvalidOperationException>(letter.Close);
 
-            referral.Respond("Answered by letter 1405/1300.");
+            referral.Letter.RespondLetterReferral(referral.Id, "Answered by letter 1405/1300.");
             letter.Close();
 
             Assert.Equal(LetterStatus.Closed, letter.Status);
@@ -354,13 +355,13 @@ namespace ERP.Test.xUnit.Domain
                 DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)),
                 "IRR");
             var line = new PurchaseContractItem(contract, item, Money.Create(12_000m, "IRR"), Unit);
-            line.SetCommittedQuantity(1_000m);
             contract.AddItem(line);
+            line.Contract.SetPurchaseContractItemCommittedQuantity(line.Id, 1_000m);
             contract.SetCommittedValue(Money.Create(12_000_000m, "IRR"));
             contract.Activate(new DateOnly(2026, 1, 1));
 
             contract.RecordConsumption(Money.Create(5_000_000m, "IRR"));
-            line.RecordConsumption(400m);
+            line.Contract.RecordPurchaseContractItemConsumption(line.Id, 400m);
             Assert.Equal(7_000_000m, contract.RemainingCommitment!.Amount);
 
             contract.Renew(DateRange.Create(new DateOnly(2027, 1, 1), new DateOnly(2027, 12, 31)));

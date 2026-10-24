@@ -107,7 +107,7 @@ namespace ERP.Test.xUnit.Domain
             var supplier = new DetailAccount(suppliers, "S-001", "A supplier");
             var line = new DocumentItem(entry, receivable, 1, 1_000m, 0m);
 
-            Assert.Throws<InvalidOperationException>(() => line.SetDetailAccounts(supplier));
+            Assert.Throws<InvalidOperationException>(() => line.Document.SetDocumentItemDetailAccounts(line.Id, supplier));
         }
     }
 }

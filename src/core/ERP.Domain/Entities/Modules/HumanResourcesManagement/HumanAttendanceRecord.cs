@@ -7,7 +7,7 @@
 /// comes back has not begun a second working day, which is why the exit updates the row that
 /// is already there rather than creating another.
 /// </summary>
-public sealed class HumanAttendanceRecord : BaseEntity
+public sealed class HumanAttendanceRecord : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }

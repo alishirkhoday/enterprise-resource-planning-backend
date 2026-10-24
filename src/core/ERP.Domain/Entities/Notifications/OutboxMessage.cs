@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Notifications;
 /// A side effect that must happen exactly once after the transaction that produced it commits.
 /// Writing it in the same transaction as the business change is what makes delivery reliable.
 /// </summary>
-public sealed class OutboxMessage : BaseEntity
+public sealed class OutboxMessage : AggregateRoot
 {
     /// <summary>Fully qualified name of the payload type.</summary>
     public string MessageType { get; private set; } = default!;

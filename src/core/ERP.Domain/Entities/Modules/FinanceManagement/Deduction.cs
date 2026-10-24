@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// <summary>
 /// A named withholding that can be applied to a pay slip, either as a set sum or as a share of pay.
 /// </summary>
-public sealed class Deduction : BaseEntity
+public sealed class Deduction : AggregateRoot
 {
     public string Title { get; private set; } = default!;
     public SalaryItemCalculation Calculation { get; private set; }
@@ -19,13 +19,13 @@ public sealed class Deduction : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<PayrollDeduction> _deductions = [];
-    public IReadOnlyList<PayrollDeduction> Deductions => _deductions;
+    public IReadOnlyList<PayrollDeduction> Deductions => _deductions.AsReadOnly();
 
     private Deduction() { }
 
     public Deduction(string title, Money amount)
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         if (!amount.IsPositive)
             throw new ArgumentOutOfRangeException(nameof(amount), "A deduction must be a positive amount.");
@@ -37,7 +37,7 @@ public sealed class Deduction : BaseEntity
 
     public Deduction(string title, Percentage rate)
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(rate, nameof(rate));
         Title = title.Trim();
         Rate = rate;
@@ -47,7 +47,7 @@ public sealed class Deduction : BaseEntity
 
     public void Update(string title, Money amount)
     {
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         if (!amount.IsPositive)
             throw new ArgumentOutOfRangeException(nameof(amount), "A deduction must be a positive amount.");

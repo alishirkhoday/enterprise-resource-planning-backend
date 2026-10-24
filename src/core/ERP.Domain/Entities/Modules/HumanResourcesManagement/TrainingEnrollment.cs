@@ -36,14 +36,14 @@ public sealed class TrainingEnrollment : BaseEntity
         Status = TrainingEnrollmentStatus.Enrolled;
     }
 
-    public void RecordAttendance(decimal attendedHours)
+    internal void RecordAttendance(decimal attendedHours)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(attendedHours, nameof(attendedHours));
         AttendedHours = attendedHours;
         Status = TrainingEnrollmentStatus.Attended;
     }
 
-    public void RecordResult(int score, int passingScore = 60)
+    internal void RecordResult(int score, int passingScore = 60)
     {
         if (score < 0 || score > 100)
             throw new ArgumentOutOfRangeException(nameof(score), "Score must be between 0 and 100.");
@@ -52,19 +52,20 @@ public sealed class TrainingEnrollment : BaseEntity
         Status = Passed ? TrainingEnrollmentStatus.Passed : TrainingEnrollmentStatus.Failed;
     }
 
-    public void IssueCertificate(string certificateNumber, DateOnly issuedOn, int? validityMonths)
+    internal void IssueCertificate(string certificateNumber, DateOnly issuedOn, int? validityMonths)
     {
         if (!Passed)
             throw new InvalidOperationException("A certificate can only be issued to an employee who passed.");
         ArgumentException.ThrowIfNullOrWhiteSpace(certificateNumber, nameof(certificateNumber));
+        var expiresOn = validityMonths.HasValue ? (DateOnly?)issuedOn.AddMonths(validityMonths.Value) : null;
         CertificateNumber = certificateNumber.Trim();
         CertificateIssuedOn = issuedOn;
-        CertificateExpiresOn = validityMonths.HasValue ? issuedOn.AddMonths(validityMonths.Value) : null;
+        CertificateExpiresOn = expiresOn;
     }
 
-    public void MarkAsAbsent() => Status = TrainingEnrollmentStatus.Absent;
+    internal void MarkAsAbsent() => Status = TrainingEnrollmentStatus.Absent;
 
-    public void Cancel() => Status = TrainingEnrollmentStatus.Cancelled;
+    internal void Cancel() => Status = TrainingEnrollmentStatus.Cancelled;
 
     public bool IsCertificateValidOn(DateOnly date) =>
         CertificateIssuedOn is not null && (CertificateExpiresOn is null || CertificateExpiresOn.Value >= date);

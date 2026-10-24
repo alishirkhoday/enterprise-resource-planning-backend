@@ -19,9 +19,9 @@ public sealed class MeetingAttendee : BaseEntity
     public MeetingAttendee(Meeting meeting, string prefix, string fullName, string mobilePhoneNumberWithRegionCode, string? email = null)
     {
         ArgumentNullException.ThrowIfNull(meeting, nameof(meeting));
-        ArgumentException.ThrowIfNullOrEmpty(prefix, nameof(prefix));
-        ArgumentException.ThrowIfNullOrEmpty(fullName, nameof(fullName));
-        ArgumentException.ThrowIfNullOrEmpty(mobilePhoneNumberWithRegionCode, nameof(mobilePhoneNumberWithRegionCode));
+        ArgumentException.ThrowIfNullOrWhiteSpace(prefix, nameof(prefix));
+        ArgumentException.ThrowIfNullOrWhiteSpace(fullName, nameof(fullName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(mobilePhoneNumberWithRegionCode, nameof(mobilePhoneNumberWithRegionCode));
         Meeting = meeting;
         Prefix = prefix;
         FullName = fullName;
@@ -29,5 +29,5 @@ public sealed class MeetingAttendee : BaseEntity
         Status = MeetingAttendeeStatus.Invited;
     }
 
-    public void UpdateStatus(MeetingAttendeeStatus newStatus) => Status = newStatus;
+    internal void UpdateStatus(MeetingAttendeeStatus newStatus) => Status = newStatus;
 }

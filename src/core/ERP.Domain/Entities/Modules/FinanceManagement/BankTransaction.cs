@@ -46,27 +46,27 @@ public sealed class BankTransaction : BaseEntity
         TransactionDate = transactionDate;
     }
 
-    public void SetBankReference(string? bankReference, string? trackingCode)
+    internal void SetBankReference(string? bankReference, string? trackingCode)
     {
         BankReference = string.IsNullOrWhiteSpace(bankReference) ? null : bankReference.Trim();
         TrackingCode = string.IsNullOrWhiteSpace(trackingCode) ? null : trackingCode.Trim();
     }
 
-    public void SetValueDate(DateOnly valueDate) => ValueDate = valueDate;
+    internal void SetValueDate(DateOnly valueDate) => ValueDate = valueDate;
 
-    public void SetBalanceAfter(Money balance)
+    internal void SetBalanceAfter(Money balance)
     {
         ArgumentNullException.ThrowIfNull(balance, nameof(balance));
         BalanceAfter = balance;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
+    internal void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
 
-    public void LinkToCheque(Guid chequeId) => ChequeId = chequeId == Guid.Empty ? null : chequeId;
+    internal void LinkToCheque(Guid chequeId) => ChequeId = chequeId == Guid.Empty ? null : chequeId;
 
-    public void MarkAsReconciled(Guid reconciliationId)
+    internal void MarkAsReconciled(Guid reconciliationId)
     {
         if (IsReconciled)
             throw new InvalidOperationException("The transaction is already reconciled.");
@@ -74,7 +74,7 @@ public sealed class BankTransaction : BaseEntity
         ReconciliationId = reconciliationId;
     }
 
-    public void Unreconcile()
+    internal void Unreconcile()
     {
         IsReconciled = false;
         ReconciliationId = null;

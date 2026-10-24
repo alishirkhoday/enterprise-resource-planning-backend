@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// <summary>
 /// Something an inspection measures, and the range it must fall inside to be acceptable.
 /// </summary>
-public sealed class QualityParameter : BaseEntity
+public sealed class QualityParameter : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;

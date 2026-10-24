@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.CustomersRelationshipManagement;
 /// A customer issue and the conversation around it, measured against the response and resolution
 /// times the organization has promised.
 /// </summary>
-public sealed class Ticket : BaseEntity, IBranchScoped
+public sealed class Ticket : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -42,7 +42,7 @@ public sealed class Ticket : BaseEntity, IBranchScoped
     public string? Resolution { get; private set; }
 
     private readonly List<TicketMessage> _messages = [];
-    public IReadOnlyList<TicketMessage> Messages => _messages;
+    public IReadOnlyList<TicketMessage> Messages => _messages.AsReadOnly();
 
     private Ticket() { }
 
@@ -99,7 +99,9 @@ public sealed class Ticket : BaseEntity, IBranchScoped
 
     public void AddMessage(TicketMessage message)
     {
-        ArgumentNullException.ThrowIfNull(message, nameof(message));
+        ArgumentNullException.ThrowIfNull(message);
+        EnsureCanAddChild(message, message.TicketId, _messages);
+
         if (Status == TicketStatus.Closed)
             throw new InvalidOperationException("A closed ticket cannot take new messages; reopen it first.");
 

@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Notifications;
 /// The reusable body of a message. Keeping wording out of code means it can be corrected
 /// without a deployment, and translated per language.
 /// </summary>
-public sealed class NotificationTemplate : BaseEntity
+public sealed class NotificationTemplate : AggregateRoot
 {
     /// <summary>Identifies the event that triggers it, for example Order.Confirmed.</summary>
     public string Key { get; private set; } = default!;

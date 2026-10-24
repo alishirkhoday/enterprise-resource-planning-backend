@@ -14,7 +14,7 @@ namespace ERP.Domain.Entities.Modules.PlanningManagement;
 /// purchase requisition or a production order, and the line then remembers what it became.
 /// </para>
 /// </summary>
-public sealed class MaterialRequirementPlan : BaseEntity, IBranchScoped
+public sealed partial class MaterialRequirementPlan : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public DateRange Horizon { get; private set; } = default!;
@@ -33,7 +33,7 @@ public sealed class MaterialRequirementPlan : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<MaterialRequirementPlanLine> _lines = [];
-    public IReadOnlyList<MaterialRequirementPlanLine> Lines => _lines;
+    public IReadOnlyList<MaterialRequirementPlanLine> Lines => _lines.AsReadOnly();
 
     private MaterialRequirementPlan() { }
 
@@ -62,7 +62,9 @@ public sealed class MaterialRequirementPlan : BaseEntity, IBranchScoped
 
     public void AddLine(MaterialRequirementPlanLine line)
     {
-        ArgumentNullException.ThrowIfNull(line, nameof(line));
+        ArgumentNullException.ThrowIfNull(line);
+        EnsureCanAddChild(line, line.PlanId, _lines);
+
         if (Status != MaterialRequirementPlanStatus.Running)
             throw new InvalidOperationException($"Lines can only be written while the run is in progress; this one is {Status}.");
         _lines.Add(line);

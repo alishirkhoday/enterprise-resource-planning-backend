@@ -10,7 +10,7 @@ namespace ERP.Infrastructure.MainDatabase.Repositories.Users
         {
             var result = await _entity.AsQueryable().AsNoTracking()
                 .Where(up => up.User.Id.ToString() == userId)
-                .Select(up => up.Image.FilePath)
+                .Select(up => up.Image == null ? null : up.Image.FilePath)
                 .FirstOrDefaultAsync(cancellationToken);
             return result;
         }

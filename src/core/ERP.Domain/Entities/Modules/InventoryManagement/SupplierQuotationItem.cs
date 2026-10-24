@@ -50,20 +50,20 @@ public sealed class SupplierQuotationItem : BaseEntity
         DiscountPercentage = Percentage.Zero();
     }
 
-    public void SetDiscount(Percentage discountPercentage)
+    internal void SetDiscount(Percentage discountPercentage)
     {
         ArgumentNullException.ThrowIfNull(discountPercentage, nameof(discountPercentage));
         DiscountPercentage = discountPercentage;
     }
 
-    public void SetLeadTime(int leadTimeDays)
+    internal void SetLeadTime(int leadTimeDays)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(leadTimeDays, nameof(leadTimeDays));
         LeadTimeDays = leadTimeDays;
     }
 
-    public void SetSupplierItemCode(string? supplierItemCode) =>
+    internal void SetSupplierItemCode(string? supplierItemCode) =>
         SupplierItemCode = string.IsNullOrWhiteSpace(supplierItemCode) ? null : supplierItemCode.Trim();
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

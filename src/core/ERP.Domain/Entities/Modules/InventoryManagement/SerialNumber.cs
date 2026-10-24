@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// One individually identified unit of an item, followed from receipt through to the customer
 /// who ended up with it.
 /// </summary>
-public sealed class SerialNumber : BaseEntity
+public sealed class SerialNumber : AggregateRoot
 {
     public Item Item { get; private set; } = default!;
     public Guid ItemId { get; private set; }
@@ -91,9 +91,10 @@ public sealed class SerialNumber : BaseEntity
     {
         if (Status is not (SerialNumberStatus.InStock or SerialNumberStatus.Reserved))
             throw new InvalidOperationException($"A serial in state {Status} cannot be sold.");
+        var warrantyExpiresOn = warrantyMonths.HasValue ? (DateOnly?)soldOn.AddMonths(warrantyMonths.Value) : null;
         SoldOn = soldOn;
         SoldToDetailAccountId = soldToDetailAccountId == Guid.Empty ? null : soldToDetailAccountId;
-        WarrantyExpiresOn = warrantyMonths.HasValue ? soldOn.AddMonths(warrantyMonths.Value) : null;
+        WarrantyExpiresOn = warrantyExpiresOn;
         Status = SerialNumberStatus.Sold;
     }
 

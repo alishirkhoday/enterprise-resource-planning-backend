@@ -23,17 +23,17 @@ public sealed class HumanAddress : BaseEntity
         Human = human;
         HumanId = human.Id;
         Title = title.Trim();
-        Address = address;
+        Address = address.Copy();
     }
 
-    public void Update(string title, Address address)
+    internal void Update(string title, Address address)
     {
         ArgumentNullException.ThrowIfNull(address, nameof(address));
         ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
         Title = title.Trim();
-        Address = address;
+        Address = address.Copy();
     }
 
-    public void SetDefault() => IsDefault = true;
-    public void UnsetDefault() => IsDefault = false;
+    internal void SetDefault() => IsDefault = true;
+    internal void UnsetDefault() => IsDefault = false;
 }

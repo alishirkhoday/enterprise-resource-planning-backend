@@ -59,11 +59,6 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.ReceiveG
             if (built.IsFailure)
                 return Result.Failure<GoodsReceiptDto, Error>(built.Error);
 
-            foreach (var line in built.Value)
-            {
-                receipt.AddItem(line);
-            }
-
             try
             {
                 // Confirming is what tells the order lines they have been satisfied and refreshes
@@ -124,17 +119,18 @@ namespace ERP.Application.UseCases.Modules.InventoryManagement.Commands.ReceiveG
                     : orderLine.UnitPrice;
 
                 var receiptLine = new GoodsReceiptItem(receipt, orderLine, line.ReceivedQuantity, unitCost);
+                receipt.AddItem(receiptLine);
+                built.Add(receiptLine);
 
                 if (line.RejectedQuantity > 0m)
-                    receiptLine.Reject(line.RejectedQuantity, line.RejectionReason ?? "Rejected on inspection.");
+                    receipt.RejectGoodsReceiptItem(receiptLine.Id, line.RejectedQuantity, line.RejectionReason ?? "Rejected on inspection.");
 
                 if (line.ItemBatchId is not null)
-                    receiptLine.SetBatch(line.ItemBatchId.Value);
+                    receipt.SetGoodsReceiptItemBatch(receiptLine.Id, line.ItemBatchId.Value);
 
                 if (request.StorageLocationId is not null)
-                    receiptLine.ScopeToStorageLocation(request.StorageLocationId.Value);
+                    receipt.ScopeGoodsReceiptItemToStorageLocation(receiptLine.Id, request.StorageLocationId.Value);
 
-                built.Add(receiptLine);
             }
 
             return Result.Success<List<GoodsReceiptItem>, Error>(built);

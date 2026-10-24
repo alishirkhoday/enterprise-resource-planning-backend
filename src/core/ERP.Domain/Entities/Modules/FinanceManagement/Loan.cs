@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// Money advanced to an employee and recovered through payroll instalments. It is a receivable
 /// of a particular shape, which is why the schedule lives with it.
 /// </summary>
-public sealed class Loan : BaseEntity
+public sealed class Loan : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }
@@ -31,7 +31,7 @@ public sealed class Loan : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<LoanInstallment> _installments = [];
-    public IReadOnlyList<LoanInstallment> Installments => _installments;
+    public IReadOnlyList<LoanInstallment> Installments => _installments.AsReadOnly();
 
     private Loan() { }
 
@@ -40,6 +40,7 @@ public sealed class Loan : BaseEntity
         ArgumentNullException.ThrowIfNull(human, nameof(human));
         ArgumentNullException.ThrowIfNull(principalAmount, nameof(principalAmount));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(installmentCount, nameof(installmentCount));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(installmentCount, short.MaxValue, nameof(installmentCount));
         if (!principalAmount.IsPositive)
             throw new ArgumentOutOfRangeException(nameof(principalAmount), "A loan must be a positive amount.");
         if (firstInstallmentDate < grantedOn)
@@ -84,13 +85,16 @@ public sealed class Loan : BaseEntity
         var perInstallment = TotalPayable.Divide(InstallmentCount).Round(0);
         var allocated = Money.Zero(PrincipalAmount.CurrencyCode);
 
+        var schedule = new List<LoanInstallment>();
         for (var index = 1; index <= InstallmentCount; index++)
         {
             // The final instalment absorbs any rounding so the schedule adds up exactly.
             var amount = index == InstallmentCount ? TotalPayable.Subtract(allocated) : perInstallment;
             allocated = allocated.Add(amount);
-            _installments.Add(new LoanInstallment(this, (short)index, FirstInstallmentDate.AddMonths(index - 1), amount));
+            schedule.Add(new LoanInstallment(this, (short)index, FirstInstallmentDate.AddMonths(index - 1), amount));
         }
+
+        _installments.AddRange(schedule);
 
         Status = LoanStatus.Approved;
     }

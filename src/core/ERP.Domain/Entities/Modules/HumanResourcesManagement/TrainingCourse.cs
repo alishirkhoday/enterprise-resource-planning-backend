@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// <summary>
 /// A course the organization runs or buys in. Sessions are the concrete runs of it.
 /// </summary>
-public sealed class TrainingCourse : BaseEntity
+public sealed class TrainingCourse : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Title { get; private set; } = default!;
@@ -20,10 +20,10 @@ public sealed class TrainingCourse : BaseEntity
     public bool IsActive { get; private set; }
 
     private readonly List<TrainingSession> _sessions = [];
-    public IReadOnlyList<TrainingSession> Sessions => _sessions;
+    public IReadOnlyList<TrainingSession> Sessions => _sessions.AsReadOnly();
 
     private readonly List<Skill> _skillsCovered = [];
-    public IReadOnlyList<Skill> SkillsCovered => _skillsCovered;
+    public IReadOnlyList<Skill> SkillsCovered => _skillsCovered.AsReadOnly();
 
     private TrainingCourse() { }
 

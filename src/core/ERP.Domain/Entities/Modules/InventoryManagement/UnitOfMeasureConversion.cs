@@ -4,7 +4,7 @@
 /// How to get from one unit to another. Without a conversion, a quantity in boxes and one in
 /// pieces cannot be added, which is exactly what the Quantity value object refuses to do.
 /// </summary>
-public sealed class UnitOfMeasureConversion : BaseEntity
+public sealed class UnitOfMeasureConversion : AggregateRoot
 {
     public Guid FromUnit { get; private set; } = default!;
     public Guid ToUnit { get; private set; } = default!;

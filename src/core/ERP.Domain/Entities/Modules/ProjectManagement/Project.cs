@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProjectManagement;
 /// A body of work with its own budget and schedule. Costs, hours and purchases can all be
 /// attributed to it, which is what makes project profitability answerable.
 /// </summary>
-public sealed class Project : BaseEntity, IBranchScoped
+public sealed partial class Project : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -37,10 +37,10 @@ public sealed class Project : BaseEntity, IBranchScoped
     public string? Description { get; private set; }
 
     private readonly List<ProjectPhase> _phases = [];
-    public IReadOnlyList<ProjectPhase> Phases => _phases;
+    public IReadOnlyList<ProjectPhase> Phases => _phases.AsReadOnly();
 
     private readonly List<ProjectMember> _members = [];
-    public IReadOnlyList<ProjectMember> Members => _members;
+    public IReadOnlyList<ProjectMember> Members => _members.AsReadOnly();
 
     private Project() { }
 
@@ -106,7 +106,9 @@ public sealed class Project : BaseEntity, IBranchScoped
 
     public void AddPhase(ProjectPhase phase)
     {
-        ArgumentNullException.ThrowIfNull(phase, nameof(phase));
+        ArgumentNullException.ThrowIfNull(phase);
+        EnsureCanAddChild(phase, phase.ProjectId, _phases);
+
         if (_phases.Any(p => p.SequenceNumber == phase.SequenceNumber))
             throw new InvalidOperationException($"Phase {phase.SequenceNumber} already exists on this project.");
         _phases.Add(phase);
@@ -114,7 +116,9 @@ public sealed class Project : BaseEntity, IBranchScoped
 
     public void AddMember(ProjectMember member)
     {
-        ArgumentNullException.ThrowIfNull(member, nameof(member));
+        ArgumentNullException.ThrowIfNull(member);
+        EnsureCanAddChild(member, member.ProjectId, _members);
+
         if (_members.Any(m => m.HumanId == member.HumanId && m.IsCurrentlyActive))
             throw new InvalidOperationException("That person is already on the project.");
         _members.Add(member);

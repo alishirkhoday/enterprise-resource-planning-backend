@@ -6,7 +6,7 @@ namespace ERP.Domain.Entities.Modules.ProductionManagement;
 /// What one item is made of, for a stated output quantity. Versioning it is what lets an old
 /// production order still be explained after the recipe changes.
 /// </summary>
-public sealed class BillOfMaterials : BaseEntity
+public sealed partial class BillOfMaterials : AggregateRoot
 {
     public Item Item { get; private set; } = default!;
     public Guid ItemId { get; private set; }
@@ -26,7 +26,7 @@ public sealed class BillOfMaterials : BaseEntity
     public string Description { get; private set; } = default!;
 
     private readonly List<BillOfMaterialItem> _components = [];
-    public IReadOnlyList<BillOfMaterialItem> Components => _components;
+    public IReadOnlyList<BillOfMaterialItem> Components => _components.AsReadOnly();
 
     private BillOfMaterials() { }
 
@@ -60,7 +60,9 @@ public sealed class BillOfMaterials : BaseEntity
 
     public void AddComponent(BillOfMaterialItem component)
     {
-        ArgumentNullException.ThrowIfNull(component, nameof(component));
+        ArgumentNullException.ThrowIfNull(component);
+        EnsureCanAddChild(component, component.BillOfMaterialsId, _components);
+
         EnsureDraft();
         if (component.ComponentId == ItemId)
             throw new InvalidOperationException("An item cannot be a component of itself.");
@@ -71,6 +73,10 @@ public sealed class BillOfMaterials : BaseEntity
 
     public void RemoveComponent(BillOfMaterialItem component)
     {
+        ArgumentNullException.ThrowIfNull(component);
+        if (component.BillOfMaterialsId != Id || !_components.Contains(component))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(component, nameof(component));
         EnsureDraft();
         _components.Remove(component);

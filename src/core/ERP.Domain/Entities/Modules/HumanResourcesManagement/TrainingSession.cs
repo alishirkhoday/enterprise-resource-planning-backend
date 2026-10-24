@@ -3,7 +3,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// <summary>
 /// One scheduled run of a <see cref="TrainingCourse"/>, with a capacity and a roster.
 /// </summary>
-public sealed class TrainingSession : BaseEntity
+public sealed partial class TrainingSession : AggregateRoot
 {
     public TrainingCourse Course { get; private set; } = default!;
     public Guid CourseId { get; private set; }
@@ -20,7 +20,7 @@ public sealed class TrainingSession : BaseEntity
     public Guid? CostCenterId { get; private set; }
 
     private readonly List<TrainingEnrollment> _enrollments = [];
-    public IReadOnlyList<TrainingEnrollment> Enrollments => _enrollments;
+    public IReadOnlyList<TrainingEnrollment> Enrollments => _enrollments.AsReadOnly();
 
     private TrainingSession() { }
 
@@ -59,7 +59,9 @@ public sealed class TrainingSession : BaseEntity
 
     public void Enroll(TrainingEnrollment enrollment)
     {
-        ArgumentNullException.ThrowIfNull(enrollment, nameof(enrollment));
+        ArgumentNullException.ThrowIfNull(enrollment);
+        EnsureCanAddChild(enrollment, enrollment.SessionId, _enrollments);
+
         if (Status != TrainingSessionStatus.Scheduled)
             throw new InvalidOperationException($"Enrolment is closed because the session is {Status}.");
         if (Capacity > 0 && _enrollments.Count >= Capacity)

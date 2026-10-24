@@ -3,7 +3,7 @@
 /// <summary>
 /// A department - واحد سازمانی. Positions hang off departments, and people hang off positions.
 /// </summary>
-public sealed class Department : BaseEntity
+public sealed class Department : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -13,17 +13,17 @@ public sealed class Department : BaseEntity
     public Guid? ParentId { get; private set; }
 
     private readonly List<Department> _children = [];
-    public IReadOnlyList<Department> Children => _children;
+    public IReadOnlyList<Department> Children => _children.AsReadOnly();
 
     private readonly List<Position> _positions = [];
-    public IReadOnlyList<Position> Positions => _positions;
+    public IReadOnlyList<Position> Positions => _positions.AsReadOnly();
 
     private Department() { }
 
     public Department(string code, string name, Department? parent = null, bool isSystematic = false)
     {
-        ArgumentException.ThrowIfNullOrEmpty(code, nameof(code));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Code = code.Trim();
         Name = name.Trim();
         if (parent is not null)
@@ -36,8 +36,8 @@ public sealed class Department : BaseEntity
 
     public void Update(string code, string name, Department? parent = null)
     {
-        ArgumentException.ThrowIfNullOrEmpty(code, nameof(code));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Code = code.Trim();
         Name = name.Trim();
         if (parent is not null)

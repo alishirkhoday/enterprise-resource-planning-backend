@@ -3,13 +3,13 @@
 /// <summary>
 /// A screen assembled out of report templates.
 /// </summary>
-public sealed class Dashboard : BaseEntity
+public sealed class Dashboard : AggregateRoot
 {
     public string Title { get; private set; } = default!;
     public string Description { get; private set; } = default!;
 
     private readonly List<DashboardWidget> _widgets = new();
-    public IReadOnlyList<DashboardWidget> Widgets => _widgets;
+    public IReadOnlyList<DashboardWidget> Widgets => _widgets.AsReadOnly();
 
     // Required by Entity Framework to materialise the entity.
     private Dashboard() { }
@@ -20,5 +20,11 @@ public sealed class Dashboard : BaseEntity
         Description = description;
     }
 
-    public void AddWidget(DashboardWidget widget) => _widgets.Add(widget);
+    public void AddWidget(DashboardWidget widget)
+    {
+        ArgumentNullException.ThrowIfNull(widget);
+        EnsureCanAddChild(widget, widget.Dashboard.Id, _widgets);
+
+        _widgets.Add(widget);
+    }
 }

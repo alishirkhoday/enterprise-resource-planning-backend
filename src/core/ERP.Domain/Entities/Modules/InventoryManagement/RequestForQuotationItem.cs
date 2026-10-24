@@ -36,8 +36,8 @@ public sealed class RequestForQuotationItem : BaseEntity
         UnitOfMeasureId = unitOfMeasureId;
     }
 
-    public void SetRequiredByDate(DateOnly requiredByDate) => RequiredByDate = requiredByDate;
+    internal void SetRequiredByDate(DateOnly requiredByDate) => RequiredByDate = requiredByDate;
 
-    public void SetSpecification(string? specification) =>
+    internal void SetSpecification(string? specification) =>
         Specification = string.IsNullOrWhiteSpace(specification) ? null : specification.Trim();
 }

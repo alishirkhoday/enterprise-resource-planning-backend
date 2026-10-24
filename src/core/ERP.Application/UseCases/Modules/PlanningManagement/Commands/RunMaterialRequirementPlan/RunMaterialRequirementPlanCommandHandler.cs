@@ -83,7 +83,6 @@ namespace ERP.Application.UseCases.Modules.PlanningManagement.Commands.RunMateri
                 if (line.IsFailure)
                     return Result.Failure<MaterialRequirementPlanDto, Error>(line.Error);
 
-                plan.AddLine(line.Value);
             }
 
             plan.Complete();
@@ -151,13 +150,14 @@ namespace ERP.Application.UseCases.Modules.PlanningManagement.Commands.RunMateri
                 onOrder + inProduction,
                 onHand,
                 item.BaseUnitOfMeasureId.Value);
+            plan.AddLine(line);
 
             var policy = request.WarehouseId is not null
                 ? await inventories.GetAsync(item.Id, request.WarehouseId.Value, cancellationToken: cancellationToken)
                 : null;
 
             if (policy is not null)
-                line.SetSafetyQuantity(policy.MinimumQuantity);
+                plan.SetMaterialRequirementPlanLineSafetyQuantity(line.Id, policy.MinimumQuantity);
 
             if (line.NetRequirement > 0m)
             {
@@ -176,7 +176,7 @@ namespace ERP.Application.UseCases.Modules.PlanningManagement.Commands.RunMateri
                         ? Math.Max(line.NetRequirement, policy.ReorderQuantity.Value)
                         : line.NetRequirement;
 
-                    line.Suggest(action, quantity, leadTimeDays: 0);
+                    plan.SuggestMaterialRequirementPlanLine(line.Id, action, quantity, leadTimeDays: 0);
                 }
             }
 

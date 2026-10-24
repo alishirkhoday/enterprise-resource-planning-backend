@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Files;
 /// A file held against some record. The hash lets identical uploads share storage and lets a
 /// file be proved unchanged.
 /// </summary>
-public sealed class Attachment : BaseEntity, IBranchScoped
+public sealed class Attachment : AggregateRoot, IBranchScoped
 {
     public string ReferenceId { get; private set; } = default!;
     public string ReferenceType { get; private set; } = default!;

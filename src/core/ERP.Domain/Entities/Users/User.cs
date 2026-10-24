@@ -10,7 +10,7 @@ namespace ERP.Domain.Entities.Users;
 /// on Human; a user can exist with no employee behind it, and an employee can exist with no
 /// login. Tying the two together would mean neither could exist without the other.
 /// </summary>
-public sealed class User : BaseEntity
+public sealed partial class User : AggregateRoot
 {
     public Username Username { get; private set; } = default!;
     public string NormalizedUsername { get; private set; } = default!;
@@ -39,16 +39,16 @@ public sealed class User : BaseEntity
     public bool TwoFactorAuthenticationEnabled { get; private set; }
 
     private readonly List<UserActivityHistory> _activityHistories = [];
-    public IReadOnlyList<UserActivityHistory> ActivityHistories => _activityHistories;
+    public IReadOnlyList<UserActivityHistory> ActivityHistories => _activityHistories.AsReadOnly();
 
     private readonly List<UserSession> _sessions = [];
-    public IReadOnlyList<UserSession> Sessions => _sessions;
+    public IReadOnlyList<UserSession> Sessions => _sessions.AsReadOnly();
 
     private readonly List<UserToken> _tokens = [];
-    public IReadOnlyList<UserToken> Tokens => _tokens;
+    public IReadOnlyList<UserToken> Tokens => _tokens.AsReadOnly();
 
     private readonly List<UserRole> _roles = [];
-    public IReadOnlyList<UserRole> Roles => _roles;
+    public IReadOnlyList<UserRole> Roles => _roles.AsReadOnly();
 
     private User() { }
 
@@ -95,9 +95,12 @@ public sealed class User : BaseEntity
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(mobilePhoneNumberRegionCode, nameof(mobilePhoneNumberRegionCode));
         ArgumentException.ThrowIfNullOrWhiteSpace(mobilePhoneNumber, nameof(mobilePhoneNumber));
-        MobilePhoneNumberRegionCode = MobilePhoneNumberRegionCode.Create(mobilePhoneNumberRegionCode);
-        MobilePhoneNumber = MobilePhoneNumber.Create(mobilePhoneNumber);
-        NormalizedMobilePhoneNumber = Normalization.NormalizeMobilePhoneNumber(MobilePhoneNumberRegionCode.Value, MobilePhoneNumber.Value);
+        var regionCode = MobilePhoneNumberRegionCode.Create(mobilePhoneNumberRegionCode);
+        var number = MobilePhoneNumber.Create(mobilePhoneNumber);
+        var normalized = Normalization.NormalizeMobilePhoneNumber(regionCode.Value, number.Value);
+        MobilePhoneNumberRegionCode = regionCode;
+        MobilePhoneNumber = number;
+        NormalizedMobilePhoneNumber = normalized;
         MobilePhoneNumberConfirmed = false;
     }
 

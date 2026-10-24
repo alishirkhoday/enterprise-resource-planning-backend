@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// The record of goods physically arriving against a purchase order. Confirming it is what moves
 /// stock and writes the inventory ledger.
 /// </summary>
-public sealed class GoodsReceipt : BaseEntity, IBranchScoped
+public sealed partial class GoodsReceipt : AggregateRoot, IBranchScoped
 {
     public string Number { get; private set; } = default!;
 
@@ -27,7 +27,7 @@ public sealed class GoodsReceipt : BaseEntity, IBranchScoped
     public DateTimeOffset? ConfirmedOn { get; private set; }
 
     private readonly List<GoodsReceiptItem> _items = [];
-    public IReadOnlyList<GoodsReceiptItem> Items => _items;
+    public IReadOnlyList<GoodsReceiptItem> Items => _items.AsReadOnly();
 
     private GoodsReceipt() { }
 
@@ -65,7 +65,9 @@ public sealed class GoodsReceipt : BaseEntity, IBranchScoped
 
     public void AddItem(GoodsReceiptItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.ReceiptId, _items);
+
         EnsureDraft();
         if (item.OrderItem.PurchaseOrderId != PurchaseOrderId)
             throw new InvalidOperationException("The line belongs to a different purchase order.");
@@ -74,6 +76,10 @@ public sealed class GoodsReceipt : BaseEntity, IBranchScoped
 
     public void RemoveItem(GoodsReceiptItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.ReceiptId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);

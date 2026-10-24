@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A float advanced to an employee for small expenses, topped back up to its ceiling once
 /// the receipts are settled.
 /// </summary>
-public sealed class PettyCash : BaseEntity, IBranchScoped
+public sealed class PettyCash : AggregateRoot, IBranchScoped
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;

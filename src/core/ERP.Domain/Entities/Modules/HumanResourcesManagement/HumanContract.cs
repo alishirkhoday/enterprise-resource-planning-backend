@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// The employment agreement that places a person in a position for a period, at an agreed wage.
 /// Payroll reads the contract that is in force for the period being paid.
 /// </summary>
-public sealed class HumanContract : BaseEntity
+public sealed class HumanContract : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }

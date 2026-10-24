@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Auditing;
 /// An immutable record of one change to one entity. Financial software has to be able to answer
 /// who changed what and when, long after the change itself.
 /// </summary>
-public sealed class AuditLog : BaseEntity
+public sealed class AuditLog : AggregateRoot
 {
     public string EntityName { get; private set; } = default!;
     public string EntityId { get; private set; } = default!;
@@ -21,7 +21,7 @@ public sealed class AuditLog : BaseEntity
     public string? CorrelationId { get; private set; }
 
     private readonly List<AuditLogChange> _changes = [];
-    public IReadOnlyList<AuditLogChange> Changes => _changes;
+    public IReadOnlyList<AuditLogChange> Changes => _changes.AsReadOnly();
 
     private AuditLog() { }
 
@@ -46,7 +46,9 @@ public sealed class AuditLog : BaseEntity
 
     public void AddChange(AuditLogChange change)
     {
-        ArgumentNullException.ThrowIfNull(change, nameof(change));
+        ArgumentNullException.ThrowIfNull(change);
+        EnsureCanAddChild(change, change.AuditLogId, _changes);
+
         _changes.Add(change);
     }
 }

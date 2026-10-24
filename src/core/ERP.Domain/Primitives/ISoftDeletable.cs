@@ -10,6 +10,4 @@ public interface ISoftDeletable
     string? DeletedBy { get; }
     DateTimeOffset? DeletionDateTime { get; }
 
-    void Delete(string? deletedBy = null);
-    void Restore();
 }

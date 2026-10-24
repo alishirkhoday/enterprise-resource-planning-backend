@@ -32,23 +32,23 @@ public sealed class CustomerContact : BaseEntity
         FullName = fullName.Trim();
     }
 
-    public void SetContactInformation(string? mobilePhoneNumber, string? email, string? extension)
+    internal void SetContactInformation(string? mobilePhoneNumber, string? email, string? extension)
     {
         MobilePhoneNumber = string.IsNullOrWhiteSpace(mobilePhoneNumber) ? null : mobilePhoneNumber.Trim();
         Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
         Extension = string.IsNullOrWhiteSpace(extension) ? null : extension.Trim();
     }
 
-    public void SetRole(string? jobTitle, string? department)
+    internal void SetRole(string? jobTitle, string? department)
     {
         JobTitle = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle.Trim();
         Department = string.IsNullOrWhiteSpace(department) ? null : department.Trim();
     }
 
-    public void MarkAsDecisionMaker() => IsDecisionMaker = true;
+    internal void MarkAsDecisionMaker() => IsDecisionMaker = true;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void MarkAsPrimary() => IsPrimary = true;
-    public void UnmarkAsPrimary() => IsPrimary = false;
+    internal void MarkAsPrimary() => IsPrimary = true;
+    internal void UnmarkAsPrimary() => IsPrimary = false;
 }

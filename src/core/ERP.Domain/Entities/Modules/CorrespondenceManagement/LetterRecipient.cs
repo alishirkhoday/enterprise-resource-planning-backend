@@ -37,20 +37,20 @@ public sealed class LetterRecipient : BaseEntity
         Name = name.Trim();
     }
 
-    public void SetContactDetails(string? organization, string? postalAddress, string? email)
+    internal void SetContactDetails(string? organization, string? postalAddress, string? email)
     {
         Organization = string.IsNullOrWhiteSpace(organization) ? null : organization.Trim();
         PostalAddress = string.IsNullOrWhiteSpace(postalAddress) ? null : postalAddress.Trim();
         Email = string.IsNullOrWhiteSpace(email) ? null : Normalization.NormalizeEmail(email);
     }
 
-    public void IdentifyInternally(Guid? userId, Guid? humanId)
+    internal void IdentifyInternally(Guid? userId, Guid? humanId)
     {
         UserId = userId == Guid.Empty ? null : userId;
         HumanId = humanId == Guid.Empty ? null : humanId;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     public bool IsInternal => UserId.HasValue || HumanId.HasValue;
 }

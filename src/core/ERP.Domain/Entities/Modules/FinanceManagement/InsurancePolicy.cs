@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// The social insurance scheme an employer contributes to, and the split between the employee,
 /// the employer and any unemployment levy.
 /// </summary>
-public sealed class InsurancePolicy : BaseEntity
+public sealed class InsurancePolicy : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;

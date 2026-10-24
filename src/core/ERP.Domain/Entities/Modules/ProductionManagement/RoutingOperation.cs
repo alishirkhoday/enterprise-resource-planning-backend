@@ -55,21 +55,21 @@ public sealed class RoutingOperation : BaseEntity
         ScrapPercentage = Percentage.Zero();
     }
 
-    public void SetQueueHours(decimal queueHours)
+    internal void SetQueueHours(decimal queueHours)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(queueHours, nameof(queueHours));
         QueueHours = queueHours;
     }
 
-    public void SetScrapPercentage(Percentage scrapPercentage)
+    internal void SetScrapPercentage(Percentage scrapPercentage)
     {
         ArgumentNullException.ThrowIfNull(scrapPercentage, nameof(scrapPercentage));
         ScrapPercentage = scrapPercentage;
     }
 
-    public void RequireQualityCheck() => RequiresQualityCheck = true;
+    internal void RequireQualityCheck() => RequiresQualityCheck = true;
 
-    public void SetInstructions(string? instructions) =>
+    internal void SetInstructions(string? instructions) =>
         Instructions = string.IsNullOrWhiteSpace(instructions) ? null : instructions.Trim();
 
     /// <summary>Total hours this step takes for a given quantity.</summary>

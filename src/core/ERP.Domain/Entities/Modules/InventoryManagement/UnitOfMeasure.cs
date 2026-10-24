@@ -3,7 +3,7 @@
 /// <summary>
 /// A unit things are counted or measured in - واحد اندازه‌گیری.
 /// </summary>
-public sealed class UnitOfMeasure : BaseEntity
+public sealed class UnitOfMeasure : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -17,7 +17,7 @@ public sealed class UnitOfMeasure : BaseEntity
     public UnitOfMeasure(string code, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Code = code.Trim();
         Name = name.Trim();
     }
@@ -25,7 +25,7 @@ public sealed class UnitOfMeasure : BaseEntity
     public void Update(string code, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code, nameof(code));
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Code = code.Trim();
         Name = name.Trim();
     }

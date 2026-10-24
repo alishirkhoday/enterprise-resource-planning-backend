@@ -3,7 +3,7 @@
 /// <summary>
 /// What a qualification was in - رشته تحصیلی.
 /// </summary>
-public sealed class HumanEducationFieldOfStudy : BaseEntity
+public sealed class HumanEducationFieldOfStudy : AggregateRoot
 {
     public string Name { get; private set; } = default!;
 
@@ -11,13 +11,13 @@ public sealed class HumanEducationFieldOfStudy : BaseEntity
 
     public HumanEducationFieldOfStudy(string name)
     {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Name = name.Trim();
     }
 
     public void Update(string name)
     {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         Name = name.Trim();
     }
 }

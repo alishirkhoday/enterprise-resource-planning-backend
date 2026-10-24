@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A journal entry. It is the only way a balance ever changes, and it may not be posted unless
 /// debits equal credits.
 /// </summary>
-public sealed class Document : BaseEntity, IBranchScoped
+public sealed partial class Document : AggregateRoot, IBranchScoped
 {
     public FinancialYear FinancialYear { get; private set; } = default!;
     public Guid FinancialYearId { get; private set; }
@@ -36,19 +36,17 @@ public sealed class Document : BaseEntity, IBranchScoped
     public Guid? ReversalOfDocumentId { get; private set; }
 
     private readonly List<DocumentItem> _items = [];
-    public IReadOnlyList<DocumentItem> Items => _items;
+    public IReadOnlyList<DocumentItem> Items => _items.AsReadOnly();
 
     private Document() { }
 
     public Document(FinancialYear financialYear, string title, DateTimeOffset financialEventDateTime, string description, DocumentType type, bool isAutomatic = false)
     {
         ArgumentNullException.ThrowIfNull(financialYear, nameof(financialYear));
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
-        ArgumentException.ThrowIfNullOrEmpty(description, nameof(description));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(description, nameof(description));
 
-        var eventDate = DateOnly.FromDateTime(financialEventDateTime.UtcDateTime);
-        if (!financialYear.Contains(eventDate))
-            throw new ArgumentOutOfRangeException(nameof(financialEventDateTime), $"The event date falls outside financial year {financialYear.Title}.");
+        var eventDate = ValidateEventDate(financialYear, financialEventDateTime);
 
         FinancialYear = financialYear;
         FinancialYearId = financialYear.Id;
@@ -65,12 +63,23 @@ public sealed class Document : BaseEntity, IBranchScoped
     public void Update(string title, DateTimeOffset financialEventDateTime, string description, DocumentType type)
     {
         EnsureDraft();
-        ArgumentException.ThrowIfNullOrEmpty(title, nameof(title));
-        ArgumentException.ThrowIfNullOrEmpty(description, nameof(description));
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(description, nameof(description));
+        var eventDate = ValidateEventDate(FinancialYear, financialEventDateTime);
+        var accountingPeriodId = FinancialYear.PeriodOn(eventDate)?.Id;
         Title = title.Trim();
         FinancialEventDateTime = financialEventDateTime;
         Description = description.Trim();
         Type = type;
+        AccountingPeriodId = accountingPeriodId;
+    }
+
+    private static DateOnly ValidateEventDate(FinancialYear year, DateTimeOffset dateTime)
+    {
+        var date = DateOnly.FromDateTime(dateTime.UtcDateTime);
+        if (!year.Contains(date))
+            throw new ArgumentOutOfRangeException(nameof(dateTime), $"The event date falls outside financial year {year.Title}.");
+        return date;
     }
 
     public void SetNumber(string number)
@@ -91,7 +100,9 @@ public sealed class Document : BaseEntity, IBranchScoped
 
     public void AddItem(DocumentItem item)
     {
-        ArgumentNullException.ThrowIfNull(item, nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
+        EnsureCanAddChild(item, item.DocumentId, _items);
+
         EnsureDraft();
         if (!item.Account.AcceptsPostings)
             throw new InvalidOperationException($"Account {item.Account.Code} does not accept postings.");
@@ -102,6 +113,10 @@ public sealed class Document : BaseEntity, IBranchScoped
 
     public void RemoveItem(DocumentItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+        if (item.DocumentId != Id || !_items.Contains(item))
+            throw new InvalidOperationException("The child is not attached to this owner.");
+
         ArgumentNullException.ThrowIfNull(item, nameof(item));
         EnsureDraft();
         _items.Remove(item);
@@ -145,7 +160,12 @@ public sealed class Document : BaseEntity, IBranchScoped
 
     public void MarkAsReversalOf(Guid originalDocumentId) => ReversalOfDocumentId = originalDocumentId;
 
-    public void ChangeStatus(DocumentStatus status) => Status = status;
+    public void ChangeStatus(DocumentStatus status)
+    {
+        if (status == Status) return;
+        if (status == DocumentStatus.Definite) Post();
+        else throw new InvalidOperationException("A posted journal entry cannot return to draft.");
+    }
 
     private void EnsureDraft()
     {

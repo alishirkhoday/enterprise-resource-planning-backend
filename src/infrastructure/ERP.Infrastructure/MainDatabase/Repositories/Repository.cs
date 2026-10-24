@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace ERP.Infrastructure.MainDatabase.Repositories
 {
-    public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
+    public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : AggregateRoot
     {
         protected readonly IMainDbContext _context;
         protected readonly DbSet<TEntity> _entity;

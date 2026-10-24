@@ -35,6 +35,6 @@ public sealed class AccountDetailGroup : BaseEntity
         IsRequired = isRequired;
     }
 
-    public void MakeRequired() => IsRequired = true;
-    public void MakeOptional() => IsRequired = false;
+    internal void MakeRequired() => IsRequired = true;
+    internal void MakeOptional() => IsRequired = false;
 }

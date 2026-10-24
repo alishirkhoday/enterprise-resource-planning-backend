@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.FinanceManagement;
 /// A move of an asset between custodians, cost centres, branches or locations. Recording it is
 /// what makes a physical asset count reconcilable.
 /// </summary>
-public sealed class AssetTransfer : BaseEntity
+public sealed class AssetTransfer : AggregateRoot
 {
     public FixedAsset Asset { get; private set; } = default!;
     public Guid AssetId { get; private set; }

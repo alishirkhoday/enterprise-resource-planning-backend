@@ -3,7 +3,7 @@
 /// <summary>
 /// A period a machine was not producing, and why. What an availability figure is built from.
 /// </summary>
-public sealed class DowntimeLog : BaseEntity
+public sealed class DowntimeLog : AggregateRoot
 {
     public Machine Machine { get; private set; } = default!;
     public DateTimeOffset StartTime { get; private set; }

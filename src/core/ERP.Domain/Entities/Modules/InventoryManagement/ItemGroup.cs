@@ -4,7 +4,7 @@
 /// A family of items - گروه کالا. What reports subtotal by and what a targeted price list or
 /// sales target can be narrowed to.
 /// </summary>
-public sealed class ItemGroup : BaseEntity
+public sealed class ItemGroup : AggregateRoot
 {
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
@@ -35,4 +35,10 @@ public sealed class ItemGroup : BaseEntity
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
     public void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
+    public void AddUnitOfMeasure(ItemUnitOfMeasure child)
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        EnsureCanAddChild(child, child.ItemGroupId, _unitOfMeasures);
+        _unitOfMeasures.Add(child);
+    }
 }

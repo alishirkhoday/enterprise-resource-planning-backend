@@ -26,10 +26,10 @@ public sealed class ProjectPhase : BaseEntity
     public string? Description { get; private set; }
 
     private readonly List<ProjectTask> _tasks = [];
-    public IReadOnlyList<ProjectTask> Tasks => _tasks;
+    public IReadOnlyList<ProjectTask> Tasks => _tasks.AsReadOnly();
 
     private readonly List<ProjectMilestone> _milestones = [];
-    public IReadOnlyList<ProjectMilestone> Milestones => _milestones;
+    public IReadOnlyList<ProjectMilestone> Milestones => _milestones.AsReadOnly();
 
     private ProjectPhase() { }
 
@@ -53,27 +53,31 @@ public sealed class ProjectPhase : BaseEntity
         Status = ProjectPhaseStatus.NotStarted;
     }
 
-    public void SetBudget(Money budgetedCost)
+    internal void SetBudget(Money budgetedCost)
     {
         ArgumentNullException.ThrowIfNull(budgetedCost, nameof(budgetedCost));
         BudgetedCost = budgetedCost;
     }
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void AddTask(ProjectTask task)
+    internal void AddTask(ProjectTask task)
     {
-        ArgumentNullException.ThrowIfNull(task, nameof(task));
+        ArgumentNullException.ThrowIfNull(task);
+        EnsureCanAddChild(task, task.PhaseId, _tasks);
+
         _tasks.Add(task);
     }
 
-    public void AddMilestone(ProjectMilestone milestone)
+    internal void AddMilestone(ProjectMilestone milestone)
     {
-        ArgumentNullException.ThrowIfNull(milestone, nameof(milestone));
+        ArgumentNullException.ThrowIfNull(milestone);
+        EnsureCanAddChild(milestone, milestone.PhaseId, _milestones);
+
         _milestones.Add(milestone);
     }
 
-    public void Start(DateOnly actualStartDate)
+    internal void Start(DateOnly actualStartDate)
     {
         if (Status != ProjectPhaseStatus.NotStarted)
             throw new InvalidOperationException($"A phase in state {Status} cannot be started.");
@@ -81,7 +85,7 @@ public sealed class ProjectPhase : BaseEntity
         Status = ProjectPhaseStatus.InProgress;
     }
 
-    public void RecordCost(Money amount)
+    internal void RecordCost(Money amount)
     {
         ArgumentNullException.ThrowIfNull(amount, nameof(amount));
         ActualCost = ActualCost.Add(amount);
@@ -89,7 +93,7 @@ public sealed class ProjectPhase : BaseEntity
     }
 
     /// <summary>Recomputes progress from the tasks and rolls it up to the project.</summary>
-    public void RecalculateProgress()
+    internal void RecalculateProgress()
     {
         if (_tasks.Count == 0)
             return;
@@ -98,7 +102,7 @@ public sealed class ProjectPhase : BaseEntity
         Project.RecalculateProgressFromPhases();
     }
 
-    public void Complete(DateOnly actualEndDate)
+    internal void Complete(DateOnly actualEndDate)
     {
         if (Status != ProjectPhaseStatus.InProgress)
             throw new InvalidOperationException($"A phase in state {Status} cannot be completed.");
@@ -108,5 +112,5 @@ public sealed class ProjectPhase : BaseEntity
         Project.RecalculateProgressFromPhases();
     }
 
-    public void Cancel() => Status = ProjectPhaseStatus.Cancelled;
+    internal void Cancel() => Status = ProjectPhaseStatus.Cancelled;
 }

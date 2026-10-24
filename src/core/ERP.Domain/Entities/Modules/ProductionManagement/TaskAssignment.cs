@@ -47,14 +47,14 @@ public sealed class TaskAssignment : BaseEntity
         WorkDate = workDate;
     }
 
-    public void Start()
+    internal void Start()
     {
         if (StartedAt is not null)
             throw new InvalidOperationException("The assignment has already started.");
         StartedAt = DateTimeOffset.UtcNow;
     }
 
-    public void End(decimal hours)
+    internal void End(decimal hours)
     {
         if (StartedAt is null)
             throw new InvalidOperationException("The assignment has not started.");
@@ -65,5 +65,5 @@ public sealed class TaskAssignment : BaseEntity
         Task.RecordHours(hours);
     }
 
-    public void SetNotes(string? notes) => Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+    internal void SetNotes(string? notes) => Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
 }

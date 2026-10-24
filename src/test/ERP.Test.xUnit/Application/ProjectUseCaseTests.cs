@@ -34,8 +34,13 @@ namespace ERP.Test.xUnit.Application
             DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)),
             "IRR");
 
-        private static ProjectPhase CreatePhase(Project project) => new(
+        private static ProjectPhase CreatePhase(Project project)
+        {
+            var phase = new ProjectPhase(
             project, "Design", 1, DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 3, 31)), Percentage.Create(25m));
+            project.AddPhase(phase);
+            return phase;
+        }
 
         private static ProjectTask CreateTask(ProjectPhase phase) => new(
             phase, "Draw the layout", DateRange.Create(new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 7)), 40m);
@@ -217,6 +222,7 @@ namespace ERP.Test.xUnit.Application
         {
             var phase = CreatePhase(CreateProject());
             var milestone = new ProjectMilestone(phase, "Design signed off", new DateOnly(2026, 3, 20));
+            phase.Project.AddProjectPhaseMilestone(phase.Id, milestone);
 
             var projects = new Mock<IProjectRepository>();
             projects.Setup(r => r.GetMilestoneAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(milestone);
@@ -234,7 +240,8 @@ namespace ERP.Test.xUnit.Application
         {
             var phase = CreatePhase(CreateProject());
             var milestone = new ProjectMilestone(phase, "Design signed off", new DateOnly(2026, 3, 20));
-            milestone.Achieve(new DateOnly(2026, 3, 18));
+            phase.Project.AddProjectPhaseMilestone(phase.Id, milestone);
+            milestone.Phase.Project.AchieveProjectMilestone(milestone.Id, new DateOnly(2026, 3, 18));
 
             var projects = new Mock<IProjectRepository>();
             projects.Setup(r => r.GetMilestoneAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(milestone);
@@ -257,8 +264,9 @@ namespace ERP.Test.xUnit.Application
             var project = CreateProject();
             var phase = CreatePhase(project);
             var milestone = new ProjectMilestone(phase, "Design signed off", new DateOnly(2026, 3, 20));
-            milestone.SetBillableAmount(Money.Create(40_000_000m, "IRR"));
-            milestone.Achieve(new DateOnly(2026, 3, 18));
+            phase.Project.AddProjectPhaseMilestone(phase.Id, milestone);
+            milestone.Phase.Project.SetProjectMilestoneBillableAmount(milestone.Id, Money.Create(40_000_000m, "IRR"));
+            milestone.Phase.Project.AchieveProjectMilestone(milestone.Id, new DateOnly(2026, 3, 18));
 
             var projects = new Mock<IProjectRepository>();
             projects.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(project);
@@ -294,8 +302,9 @@ namespace ERP.Test.xUnit.Application
                 DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)), "IRR");
 
             var otherMilestone = new ProjectMilestone(CreatePhase(otherProject), "Not ours", new DateOnly(2026, 3, 20));
-            otherMilestone.SetBillableAmount(Money.Create(99_000_000m, "IRR"));
-            otherMilestone.Achieve(new DateOnly(2026, 3, 18));
+            otherMilestone.Phase.Project.AddProjectPhaseMilestone(otherMilestone.Phase.Id, otherMilestone);
+            otherMilestone.Phase.Project.SetProjectMilestoneBillableAmount(otherMilestone.Id, Money.Create(99_000_000m, "IRR"));
+            otherMilestone.Phase.Project.AchieveProjectMilestone(otherMilestone.Id, new DateOnly(2026, 3, 18));
 
             var projects = new Mock<IProjectRepository>();
             projects.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(project);

@@ -21,8 +21,13 @@ namespace ERP.Test.xUnit.Domain
             decimal gross = 100m,
             decimal scheduled = 0m,
             decimal opening = 0m,
-            MaterialRequirementPlan? plan = null) =>
-            new(plan ?? CreateRunningPlan(), CreateItem(), new DateOnly(2026, 3, 1), gross, scheduled, opening, Unit);
+            MaterialRequirementPlan? plan = null)
+        {
+            plan ??= CreateRunningPlan();
+            var line = new MaterialRequirementPlanLine(plan, CreateItem(), new DateOnly(2026, 3, 1), gross, scheduled, opening, Unit);
+            plan.AddLine(line);
+            return line;
+        }
 
         [Fact]
         public void The_projection_is_opening_plus_supply_less_demand()
@@ -40,7 +45,7 @@ namespace ERP.Test.xUnit.Domain
         public void Safety_stock_is_not_available_to_plan_away()
         {
             var line = CreateLine(gross: 100m, scheduled: 0m, opening: 100m);
-            line.SetSafetyQuantity(20m);
+            line.Plan.SetMaterialRequirementPlanLineSafetyQuantity(line.Id, 20m);
 
             Assert.Equal(0m, line.ProjectedOnHand);
             Assert.Equal(20m, line.NetRequirement);
@@ -50,7 +55,7 @@ namespace ERP.Test.xUnit.Domain
         public void A_covered_requirement_is_short_of_nothing()
         {
             var line = CreateLine(gross: 40m, scheduled: 0m, opening: 100m);
-            line.SetSafetyQuantity(20m);
+            line.Plan.SetMaterialRequirementPlanLineSafetyQuantity(line.Id, 20m);
 
             Assert.Equal(0m, line.NetRequirement);
             Assert.False(line.NeedsAction);
@@ -65,7 +70,7 @@ namespace ERP.Test.xUnit.Domain
         {
             var line = CreateLine();
 
-            line.Suggest(PlannedOrderAction.Purchase, 120m, leadTimeDays: 21);
+            line.Plan.SuggestMaterialRequirementPlanLine(line.Id, PlannedOrderAction.Purchase, 120m, leadTimeDays: 21);
 
             Assert.Equal(new DateOnly(2026, 2, 8), line.SuggestedReleaseDate);
             Assert.True(line.NeedsAction);
@@ -76,19 +81,19 @@ namespace ERP.Test.xUnit.Domain
         {
             var line = CreateLine();
 
-            Assert.Throws<ArgumentException>(() => line.Suggest(PlannedOrderAction.Purchase, 0m, 5));
+            Assert.Throws<ArgumentException>(() => line.Plan.SuggestMaterialRequirementPlanLine(line.Id, PlannedOrderAction.Purchase, 0m, 5));
         }
 
         [Fact]
         public void A_suggestion_cannot_be_released_twice()
         {
             var line = CreateLine();
-            line.Suggest(PlannedOrderAction.Purchase, 120m, 21);
+            line.Plan.SuggestMaterialRequirementPlanLine(line.Id, PlannedOrderAction.Purchase, 120m, 21);
 
-            line.MarkAsReleased("PurchaseRequisition", "REQ-9");
+            line.Plan.MarkMaterialRequirementPlanLineAsReleased(line.Id, "PurchaseRequisition", "REQ-9");
 
             Assert.True(line.IsReleased);
-            Assert.Throws<InvalidOperationException>(() => line.MarkAsReleased("PurchaseRequisition", "REQ-10"));
+            Assert.Throws<InvalidOperationException>(() => line.Plan.MarkMaterialRequirementPlanLineAsReleased(line.Id, "PurchaseRequisition", "REQ-10"));
         }
 
         [Fact]
@@ -96,14 +101,14 @@ namespace ERP.Test.xUnit.Domain
         {
             var line = CreateLine(gross: 10m, opening: 500m);
 
-            Assert.Throws<InvalidOperationException>(() => line.MarkAsReleased("PurchaseRequisition", "REQ-9"));
+            Assert.Throws<InvalidOperationException>(() => line.Plan.MarkMaterialRequirementPlanLineAsReleased(line.Id, "PurchaseRequisition", "REQ-9"));
         }
 
         [Fact]
         public void A_release_date_already_gone_by_is_past_due()
         {
             var line = CreateLine();
-            line.Suggest(PlannedOrderAction.Purchase, 120m, leadTimeDays: 21);
+            line.Plan.SuggestMaterialRequirementPlanLine(line.Id, PlannedOrderAction.Purchase, 120m, leadTimeDays: 21);
 
             Assert.True(line.IsPastDue(new DateOnly(2026, 2, 20)));
             Assert.False(line.IsPastDue(new DateOnly(2026, 2, 1)));
@@ -113,8 +118,8 @@ namespace ERP.Test.xUnit.Domain
         public void A_released_line_is_never_past_due()
         {
             var line = CreateLine();
-            line.Suggest(PlannedOrderAction.Purchase, 120m, leadTimeDays: 21);
-            line.MarkAsReleased("PurchaseRequisition", "REQ-9");
+            line.Plan.SuggestMaterialRequirementPlanLine(line.Id, PlannedOrderAction.Purchase, 120m, leadTimeDays: 21);
+            line.Plan.MarkMaterialRequirementPlanLineAsReleased(line.Id, "PurchaseRequisition", "REQ-9");
 
             Assert.False(line.IsPastDue(new DateOnly(2026, 2, 20)));
         }
@@ -124,9 +129,8 @@ namespace ERP.Test.xUnit.Domain
         {
             var plan = CreateRunningPlan();
             var shortLine = CreateLine(gross: 100m, plan: plan);
-            shortLine.Suggest(PlannedOrderAction.Purchase, 100m, 7);
-            plan.AddLine(shortLine);
-            plan.AddLine(CreateLine(gross: 10m, opening: 500m, plan: plan));
+            shortLine.Plan.SuggestMaterialRequirementPlanLine(shortLine.Id, PlannedOrderAction.Purchase, 100m, 7);
+            CreateLine(gross: 10m, opening: 500m, plan: plan);
 
             plan.Complete();
 
@@ -153,9 +157,10 @@ namespace ERP.Test.xUnit.Domain
         {
             var plan = new CapacityPlan("CAP-1", DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 3, 31)), ForecastBucket.Weekly);
             var line = new CapacityPlanLine(plan, new WorkCenter("WC-1", "Assembly"), new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 11), availableHours: 40m);
-            line.SetEfficiency(Percentage.Create(80m));
+            plan.AddLine(line);
+            line.Plan.SetCapacityPlanLineEfficiency(line.Id, Percentage.Create(80m));
 
-            line.RecordLoad(firmLoadHours: 30m, plannedLoadHours: 6m);
+            line.Plan.RecordCapacityPlanLineLoad(line.Id, firmLoadHours: 30m, plannedLoadHours: 6m);
 
             Assert.Equal(32m, line.EffectiveHours);
             Assert.Equal(36m, line.TotalLoadHours);
@@ -168,8 +173,8 @@ namespace ERP.Test.xUnit.Domain
         {
             var plan = new CapacityPlan("CAP-2", DateRange.Create(new DateOnly(2026, 1, 1), new DateOnly(2026, 3, 31)), ForecastBucket.Weekly);
             var line = new CapacityPlanLine(plan, new WorkCenter("WC-1", "Assembly"), new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 11), availableHours: 40m);
-            line.RecordLoad(20m, 10m);
             plan.AddLine(line);
+            line.Plan.RecordCapacityPlanLineLoad(line.Id, 20m, 10m);
 
             plan.Complete();
 
@@ -216,7 +221,8 @@ namespace ERP.Test.xUnit.Domain
                 ForecastMethod.Manual);
             var line = new DemandForecastLine(forecast, CreateItem(), new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 28), 100m, Unit);
 
-            line.RecordActual(130m);
+            forecast.AddLine(line);
+            line.Forecast.RecordDemandForecastLineActual(line.Id, 130m);
 
             Assert.Equal(30m, line.Variance);
         }

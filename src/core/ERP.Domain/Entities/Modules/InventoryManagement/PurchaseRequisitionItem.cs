@@ -45,7 +45,7 @@ public sealed class PurchaseRequisitionItem : BaseEntity
         UnitOfMeasureId = unitOfMeasureId;
     }
 
-    public void SetEstimatedUnitPrice(Money estimatedUnitPrice)
+    internal void SetEstimatedUnitPrice(Money estimatedUnitPrice)
     {
         ArgumentNullException.ThrowIfNull(estimatedUnitPrice, nameof(estimatedUnitPrice));
         if (estimatedUnitPrice.IsNegative)
@@ -53,14 +53,14 @@ public sealed class PurchaseRequisitionItem : BaseEntity
         EstimatedUnitPrice = estimatedUnitPrice;
     }
 
-    public void SuggestSupplier(Guid supplierId) => SuggestedSupplierId = supplierId == Guid.Empty ? null : supplierId;
+    internal void SuggestSupplier(Guid supplierId) => SuggestedSupplierId = supplierId == Guid.Empty ? null : supplierId;
 
-    public void SetRequiredByDate(DateOnly requiredByDate) => RequiredByDate = requiredByDate;
+    internal void SetRequiredByDate(DateOnly requiredByDate) => RequiredByDate = requiredByDate;
 
-    public void SetSpecification(string? specification) =>
+    internal void SetSpecification(string? specification) =>
         Specification = string.IsNullOrWhiteSpace(specification) ? null : specification.Trim();
 
-    public void RecordOrdered(decimal quantity)
+    internal void RecordOrdered(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (OrderedQuantity + quantity > Quantity)

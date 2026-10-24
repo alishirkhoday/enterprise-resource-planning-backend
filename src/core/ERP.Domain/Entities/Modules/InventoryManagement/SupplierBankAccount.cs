@@ -31,12 +31,12 @@ public sealed class SupplierBankAccount : BaseEntity
         CurrencyCode = currencyCode.Trim().ToUpperInvariant();
     }
 
-    public void SetInternationalBankAccountNumber(string? iban) =>
+    internal void SetInternationalBankAccountNumber(string? iban) =>
         InternationalBankAccountNumber = string.IsNullOrWhiteSpace(iban) ? null : iban.Trim().ToUpperInvariant();
 
-    public void SetAccountHolderName(string? holderName) =>
+    internal void SetAccountHolderName(string? holderName) =>
         AccountHolderName = string.IsNullOrWhiteSpace(holderName) ? null : holderName.Trim();
 
-    public void SetDefault() => IsDefault = true;
-    public void UnsetDefault() => IsDefault = false;
+    internal void SetDefault() => IsDefault = true;
+    internal void UnsetDefault() => IsDefault = false;
 }

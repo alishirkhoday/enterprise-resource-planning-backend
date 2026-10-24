@@ -7,7 +7,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// only a manufactured one can be the output of a works order. Tracking decides how closely
 /// individual units are followed - not at all, by batch, or one serial number at a time.
 /// </summary>
-public sealed class Item : BaseEntity
+public sealed partial class Item : AggregateRoot
 {
     public ItemGroup Group { get; private set; } = default!;
     public Guid GroupId { get; private set; }
@@ -46,10 +46,10 @@ public sealed class Item : BaseEntity
     public IReadOnlyList<ItemSpecification> Specifications => _specifications.AsReadOnly();
 
     private readonly List<ItemBarcode> _barcodes = [];
-    public IReadOnlyList<ItemBarcode> Barcodes => _barcodes;
+    public IReadOnlyList<ItemBarcode> Barcodes => _barcodes.AsReadOnly();
 
     private readonly List<ItemSupplier> _suppliers = [];
-    public IReadOnlyList<ItemSupplier> Suppliers => _suppliers;
+    public IReadOnlyList<ItemSupplier> Suppliers => _suppliers.AsReadOnly();
 
     private Item() { }
 
@@ -117,7 +117,9 @@ public sealed class Item : BaseEntity
 
     public void AddBarcode(ItemBarcode barcode)
     {
-        ArgumentNullException.ThrowIfNull(barcode, nameof(barcode));
+        ArgumentNullException.ThrowIfNull(barcode);
+        EnsureCanAddChild(barcode, barcode.ItemId, _barcodes);
+
         if (_barcodes.Any(b => b.Value == barcode.Value))
             throw new InvalidOperationException($"Barcode {barcode.Value} is already registered for this item.");
         _barcodes.Add(barcode);
@@ -125,7 +127,9 @@ public sealed class Item : BaseEntity
 
     public void AddSupplier(ItemSupplier supplier)
     {
-        ArgumentNullException.ThrowIfNull(supplier, nameof(supplier));
+        ArgumentNullException.ThrowIfNull(supplier);
+        EnsureCanAddChild(supplier, supplier.ItemId, _suppliers);
+
         if (_suppliers.Any(s => s.SupplierId == supplier.SupplierId && s.UnitOfMeasureId == supplier.UnitOfMeasureId))
             throw new InvalidOperationException("This supplier is already registered for the item in that unit.");
         if (supplier.IsPreferred)
@@ -141,4 +145,10 @@ public sealed class Item : BaseEntity
     public void SetActive() => IsActive = true;
     public void SetDeactive() => IsActive = false;
     public void SetDescription(string? description) => Description = string.IsNullOrEmpty(description) ? null : description.Trim();
+    public void AddSpecification(ItemSpecification child)
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        EnsureCanAddChild(child, child.ItemId, _specifications);
+        _specifications.Add(child);
+    }
 }

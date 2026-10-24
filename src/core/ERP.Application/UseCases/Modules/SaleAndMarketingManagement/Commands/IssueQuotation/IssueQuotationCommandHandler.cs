@@ -80,11 +80,6 @@ namespace ERP.Application.UseCases.Modules.SaleAndMarketingManagement.Commands.I
             if (built.IsFailure)
                 return Result.Failure<QuotationDto, Error>(built.Error);
 
-            foreach (var line in built.Value)
-            {
-                quotation.AddItem(line);
-            }
-
             if (request.AdditionalCharges > 0m)
                 quotation.SetAdditionalCharges(Money.Create(request.AdditionalCharges, currencyCode));
 
@@ -135,18 +130,19 @@ namespace ERP.Application.UseCases.Modules.SaleAndMarketingManagement.Commands.I
                     return Result.Failure<List<QuotationItem>, Error>(price.Error);
 
                 var quotationItem = new QuotationItem(quotation, item, lineNumber++, line.Quantity, line.UnitOfMeasureId, price.Value);
+                quotation.AddItem(quotationItem);
+                built.Add(quotationItem);
 
                 if (line.DiscountPercentage is not null)
-                    quotationItem.SetDiscount(Percentage.Create(line.DiscountPercentage.Value));
+                    quotation.SetQuotationItemDiscount(quotationItem.Id, Percentage.Create(line.DiscountPercentage.Value));
 
                 if (line.TaxId is not null && line.TaxPercentage is not null)
-                    quotationItem.SetTax(line.TaxId.Value, Percentage.Create(line.TaxPercentage.Value));
+                    quotation.SetQuotationItemTax(quotationItem.Id, line.TaxId.Value, Percentage.Create(line.TaxPercentage.Value));
 
                 if (line.DeliveryLeadTimeDays is not null)
-                    quotationItem.SetDeliveryLeadTime(line.DeliveryLeadTimeDays.Value);
+                    quotation.SetQuotationItemDeliveryLeadTime(quotationItem.Id, line.DeliveryLeadTimeDays.Value);
 
-                quotationItem.SetDescription(line.Description);
-                built.Add(quotationItem);
+                quotation.SetQuotationItemDescription(quotationItem.Id, line.Description);
             }
 
             return Result.Success<List<QuotationItem>, Error>(built);

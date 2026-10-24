@@ -57,7 +57,7 @@ public sealed class InvoiceItem : BaseEntity
         TaxPercentage = Percentage.Zero();
     }
 
-    public void SetDiscount(Money discount)
+    internal void SetDiscount(Money discount)
     {
         ArgumentNullException.ThrowIfNull(discount, nameof(discount));
         if (discount.CurrencyCode != ItemUnitPrice.CurrencyCode)
@@ -69,23 +69,23 @@ public sealed class InvoiceItem : BaseEntity
         Discount = discount;
     }
 
-    public void SetDiscountPercentage(Percentage discountPercentage)
+    internal void SetDiscountPercentage(Percentage discountPercentage)
     {
         ArgumentNullException.ThrowIfNull(discountPercentage, nameof(discountPercentage));
         Discount = Amount.Percent(discountPercentage);
     }
 
-    public void SetTax(Guid taxId, Percentage taxPercentage)
+    internal void SetTax(Guid taxId, Percentage taxPercentage)
     {
         ArgumentNullException.ThrowIfNull(taxPercentage, nameof(taxPercentage));
         TaxId = taxId == Guid.Empty ? null : taxId;
         TaxPercentage = taxPercentage;
     }
 
-    public void LinkToSaleOrderItem(Guid saleOrderItemId) =>
+    internal void LinkToSaleOrderItem(Guid saleOrderItemId) =>
         SaleOrderItemId = saleOrderItemId == Guid.Empty ? null : saleOrderItemId;
 
-    public void SetBatch(Guid itemBatchId) => ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
+    internal void SetBatch(Guid itemBatchId) => ItemBatchId = itemBatchId == Guid.Empty ? null : itemBatchId;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 }

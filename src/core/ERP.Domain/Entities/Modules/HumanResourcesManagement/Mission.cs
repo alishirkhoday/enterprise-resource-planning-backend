@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.HumanResourcesManagement;
 /// A work trip. It is both an attendance fact, because the employee is away, and a cost,
 /// because expenses are claimed against it.
 /// </summary>
-public sealed class Mission : BaseEntity
+public sealed partial class Mission : AggregateRoot
 {
     public Human Human { get; private set; } = default!;
     public Guid HumanId { get; private set; }
@@ -28,7 +28,7 @@ public sealed class Mission : BaseEntity
     public Guid? ProjectId { get; private set; }
 
     private readonly List<MissionExpense> _expenses = [];
-    public IReadOnlyList<MissionExpense> Expenses => _expenses;
+    public IReadOnlyList<MissionExpense> Expenses => _expenses.AsReadOnly();
 
     private Mission() { }
 
@@ -84,7 +84,9 @@ public sealed class Mission : BaseEntity
 
     public void AddExpense(MissionExpense expense)
     {
-        ArgumentNullException.ThrowIfNull(expense, nameof(expense));
+        ArgumentNullException.ThrowIfNull(expense);
+        EnsureCanAddChild(expense, expense.MissionId, _expenses);
+
         if (Status != HumanRequestStatus.Approved)
             throw new InvalidOperationException("Expenses can only be claimed against an approved mission.");
         _expenses.Add(expense);

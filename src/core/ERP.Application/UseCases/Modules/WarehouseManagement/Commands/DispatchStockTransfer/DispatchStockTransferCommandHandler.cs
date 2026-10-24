@@ -97,11 +97,7 @@ namespace ERP.Application.UseCases.Modules.WarehouseManagement.Commands.Dispatch
 
                 try
                 {
-                    line.Dispatch(resolved.Quantity);
-
-                    // Recorded on the line so the destination books in the same value, however
-                    // long the pallet sat waiting and however the source's average moved meanwhile.
-                    line.SetUnitCost(value.Divide(resolved.Quantity));
+                    transfer.DispatchStockTransferOrderItem(line.Id, resolved.Quantity, value.Divide(resolved.Quantity));
                 }
                 catch (InvalidOperationException exception)
                 {

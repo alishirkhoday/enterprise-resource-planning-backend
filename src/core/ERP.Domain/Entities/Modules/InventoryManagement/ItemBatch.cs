@@ -4,7 +4,7 @@ namespace ERP.Domain.Entities.Modules.InventoryManagement;
 /// A production run of an item that shares one set of dates and one cost. Batch tracking is what
 /// makes a recall possible.
 /// </summary>
-public sealed class ItemBatch : BaseEntity
+public sealed class ItemBatch : AggregateRoot
 {
     public Item Item { get; private set; } = default!;
     public Guid ItemId { get; private set; }

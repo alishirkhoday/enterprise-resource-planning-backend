@@ -31,5 +31,5 @@ public sealed class ChequeOperation : BaseEntity
         Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
     }
 
-    public void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
+    internal void LinkToDocument(Guid documentId) => DocumentId = documentId == Guid.Empty ? null : documentId;
 }

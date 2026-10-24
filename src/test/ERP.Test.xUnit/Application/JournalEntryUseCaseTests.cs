@@ -132,7 +132,7 @@ namespace ERP.Test.xUnit.Application
         {
             var year = CreateOpenYear();
             var period = year.Periods[0];
-            period.Close("closer");
+            period.FinancialYear.CloseAccountingPeriod(period.Id, "closer");
 
             var debit = CreateAccount("1001", "Cash", AccountBalance.Debtor);
             var credit = CreateAccount("4001", "Revenue", AccountBalance.Creditor);

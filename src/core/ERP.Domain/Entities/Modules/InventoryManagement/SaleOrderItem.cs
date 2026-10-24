@@ -65,26 +65,26 @@ public sealed class SaleOrderItem : BaseEntity
         TaxPercentage = Percentage.Zero();
     }
 
-    public void SetDiscount(Percentage discountPercentage)
+    internal void SetDiscount(Percentage discountPercentage)
     {
         ArgumentNullException.ThrowIfNull(discountPercentage, nameof(discountPercentage));
         DiscountPercentage = discountPercentage;
     }
 
-    public void SetTax(Guid taxId, Percentage taxPercentage)
+    internal void SetTax(Guid taxId, Percentage taxPercentage)
     {
         ArgumentNullException.ThrowIfNull(taxPercentage, nameof(taxPercentage));
         TaxId = taxId == Guid.Empty ? null : taxId;
         TaxPercentage = taxPercentage;
     }
 
-    public void SetFulfillmentSource(Guid warehouseId) => WarehouseId = warehouseId == Guid.Empty ? null : warehouseId;
+    internal void SetFulfillmentSource(Guid warehouseId) => WarehouseId = warehouseId == Guid.Empty ? null : warehouseId;
 
-    public void SetPromisedDeliveryDate(DateOnly promisedDeliveryDate) => PromisedDeliveryDate = promisedDeliveryDate;
+    internal void SetPromisedDeliveryDate(DateOnly promisedDeliveryDate) => PromisedDeliveryDate = promisedDeliveryDate;
 
-    public void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    internal void SetDescription(string? description) => Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-    public void ChangeQuantity(decimal quantity)
+    internal void ChangeQuantity(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (quantity < DeliveredQuantity)
@@ -92,7 +92,7 @@ public sealed class SaleOrderItem : BaseEntity
         Quantity = quantity;
     }
 
-    public void Reserve(decimal quantity)
+    internal void Reserve(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (ReservedQuantity + quantity > Quantity)
@@ -100,7 +100,7 @@ public sealed class SaleOrderItem : BaseEntity
         ReservedQuantity += quantity;
     }
 
-    public void ReleaseReservation(decimal quantity)
+    internal void ReleaseReservation(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (quantity > ReservedQuantity)
@@ -108,7 +108,7 @@ public sealed class SaleOrderItem : BaseEntity
         ReservedQuantity -= quantity;
     }
 
-    public void Deliver(decimal quantity)
+    internal void Deliver(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (DeliveredQuantity + quantity > Quantity)
@@ -118,7 +118,7 @@ public sealed class SaleOrderItem : BaseEntity
             ReservedQuantity -= Math.Min(quantity, ReservedQuantity);
     }
 
-    public void ReverseDelivery(decimal quantity)
+    internal void ReverseDelivery(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (quantity > DeliveredQuantity)
@@ -126,7 +126,7 @@ public sealed class SaleOrderItem : BaseEntity
         DeliveredQuantity -= quantity;
     }
 
-    public void Invoice(decimal quantity)
+    internal void Invoice(decimal quantity)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity, nameof(quantity));
         if (InvoicedQuantity + quantity > Quantity)
